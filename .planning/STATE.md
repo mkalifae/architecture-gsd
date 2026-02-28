@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 1 of 5 (Foundation, Tooling, and Agent Scaffold)
-Plan: 1 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-02-28 — Completed 01-01-PLAN (scaffold + stubs)
+Last activity: 2026-02-28 — Completed 01-03-PLAN (naming conventions + CONTEXT.md schema)
 
-Progress: [█░░░░░░░░░] 5%
+Progress: [██░░░░░░░░] 15%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 2 min
-- Total execution time: 0.03 hours
+- Total plans completed: 3
+- Average duration: 3 min
+- Total execution time: 0.08 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation, Tooling, and Agent Scaffold | 1/4 | 2 min | 2 min |
+| 1. Foundation, Tooling, and Agent Scaffold | 3/4 | 8 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 2 min
+- Last 5 plans: 3 min
 - Trend: -
 
 *Updated after each plan completion*
@@ -50,6 +50,9 @@ Recent decisions affecting current work:
 - [01-01]: Balanced profile IS the FOUN-08 allocation — quality and balanced profiles are identical in v1 (opus/sonnet/haiku per spec); budget uses haiku more broadly
 - [01-01]: Agent stubs have complete final-correct frontmatter from day 1 — Phase 2+ agents inherit routing without rework
 - [01-01]: Three config profiles (quality/balanced/budget) mirror GSD pattern — model switching is a config change, not code change
+- [Phase 01]: CONTEXT.md schema defines all 6 fields as complete Phase 2 contract — no revision needed when discuss-system is implemented
+- [Phase 01]: scale field is structured YAML object not flat string — enables programmatic reasoning about agents/throughput/latency
+- [Phase 01]: locked-decisions can be empty array unlike non-goals — a system may have no pre-made architectural decisions at intake time
 
 ### Pending Todos
 
@@ -62,5 +65,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 01-01-PLAN — plugin scaffold, config, 11 agent stubs, 6 workflow stubs committed
+Stopped at: Completed 01-03-PLAN — naming conventions document and CONTEXT.md schema specification committed
 Resume file: None
