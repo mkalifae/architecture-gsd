@@ -35,13 +35,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Design document templates exist for agent-spec.md, event-schema.yaml, and failure-modes.md — each template has required sections specified with content expectations, not just section names
   5. Model profiles are configured in config.json: Opus for discuss-system, arch-roadmapper, and context-engineer; Sonnet for arch-researcher, arch-planner, arch-executor, arch-verifier, schema-designer, and failure-analyst; Haiku for arch-checker and arch-integrator
 
-**Plans**: TBD
+**Plans:** 4 plans
 
 Plans:
-- [ ] 01-01: Project directory structure, plugin.json, and config.json
-- [ ] 01-02: arch-tools.js — frontmatter CRUD, stub detection, and phase state management
-- [ ] 01-03: CONTEXT.md schema, canonical naming document, and references/ documents
-- [ ] 01-04: Design document templates (agent-spec.md, event-schema.yaml, failure-modes.md)
+- [ ] 01-01-PLAN.md — Project directory structure, plugin.json, config.json, 11 agent stubs, 6 workflow stubs
+- [ ] 01-02-PLAN.md — arch-tools.js: frontmatter CRUD, stub detection, state management, validate-context, validate-names
+- [ ] 01-03-PLAN.md — Canonical naming conventions document and CONTEXT.md schema specification
+- [ ] 01-04-PLAN.md — Design document templates (agent-spec, event-schema, failure-modes) and references/ documents
 
 ---
 
@@ -153,7 +153,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation, Tooling, and Agent Scaffold | 0/4 | Not started | - |
+| 1. Foundation, Tooling, and Agent Scaffold | 0/4 | Planned | - |
 | 2. Intake and Intent Extraction | 0/2 | Not started | - |
 | 3. Core Design Pipeline | 0/7 | Not started | - |
 | 4. Verification, Integration, and Quality Gates | 0/5 | Not started | - |
