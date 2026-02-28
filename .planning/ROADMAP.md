@@ -38,10 +38,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Project directory structure, plugin.json, config.json, 11 agent stubs, 6 workflow stubs
-- [ ] 01-02-PLAN.md — arch-tools.js: frontmatter CRUD, stub detection, state management, validate-context, validate-names
-- [ ] 01-03-PLAN.md — Canonical naming conventions document and CONTEXT.md schema specification
-- [ ] 01-04-PLAN.md — Design document templates (agent-spec, event-schema, failure-modes) and references/ documents
+- [x] 01-01-PLAN.md — Project directory structure, plugin.json, config.json, 11 agent stubs, 6 workflow stubs
+- [x] 01-02-PLAN.md — arch-tools.js: frontmatter CRUD, stub detection, state management, validate-context, validate-names
+- [x] 01-03-PLAN.md — Canonical naming conventions document and CONTEXT.md schema specification
+- [x] 01-04-PLAN.md — Design document templates (agent-spec, event-schema, failure-modes) and references/ documents
 
 ---
 
@@ -60,11 +60,11 @@ Plans:
   4. Non-goals in CONTEXT.md are explicit, named, and mandatory — a CONTEXT.md with no non-goals section fails validation
   5. STATE.md is initialized with current position, locked decisions from intake, and session continuity fields — any agent starting from scratch can determine what has been done by reading STATE.md and CONTEXT.md alone
 
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: discuss-system agent spec and adaptive questioning strategy
-- [ ] 02-02: /arch-gsd:new-system workflow and STATE.md initialization
+- [ ] 02-01-PLAN.md — discuss-system agent spec: full body with 10-step adaptive questioning strategy, grouped gray-area menu, mandatory non-goals enforcement, inline validate-context
+- [ ] 02-02-PLAN.md — /arch-gsd:new-system workflow: directory scaffolding, discuss-system spawn, return handling, STATE.md initialization (50-70 lines)
 
 ---
 
