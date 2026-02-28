@@ -50,6 +50,9 @@ Recent decisions affecting current work:
 - [01-01]: Balanced profile IS the FOUN-08 allocation — quality and balanced profiles are identical in v1 (opus/sonnet/haiku per spec); budget uses haiku more broadly
 - [01-01]: Agent stubs have complete final-correct frontmatter from day 1 — Phase 2+ agents inherit routing without rework
 - [01-01]: Three config profiles (quality/balanced/budget) mirror GSD pattern — model switching is a config change, not code change
+- [01-02]: Frontmatter regex parser (not a YAML library) mirrors GSD pattern — zero npm dependencies, handles all YAML patterns in agent specs
+- [01-02]: validate-names uses heuristic (agents/ path + model/tools/description frontmatter) to identify agent spec files vs other markdown
+- [01-02]: detect-stubs strips frontmatter before scanning — frontmatter may legitimately use placeholder values during drafting
 - [Phase 01]: CONTEXT.md schema defines all 6 fields as complete Phase 2 contract — no revision needed when discuss-system is implemented
 - [Phase 01]: scale field is structured YAML object not flat string — enables programmatic reasoning about agents/throughput/latency
 - [Phase 01]: locked-decisions can be empty array unlike non-goals — a system may have no pre-made architectural decisions at intake time
@@ -65,5 +68,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 01-03-PLAN — naming conventions document and CONTEXT.md schema specification committed
+Stopped at: Completed 01-02-PLAN — arch-tools.js CLI utility with all Phase 1 commands committed
 Resume file: None
