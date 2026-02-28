@@ -1,0 +1,110 @@
+# Template: Event/Command Schema
+# See: references/schema-patterns.md for complete typing and versioning rules
+#
+# NAMING RULES (enforced by arch-tools.js validate-names):
+#   Events: PascalCase  (e.g., TaskAssigned, PhaseCompleted, ContextValidated)
+#   Commands: SCREAMING_SNAKE_CASE  (e.g., ASSIGN_TASK, VALIDATE_CONTEXT)
+#
+# USAGE:
+#   - Copy this template to design/schemas/{EventName}.yaml
+#   - Replace ALL placeholder values (marked with brackets)
+#   - Every field in payload MUST have: name, type, required, example
+#   - Optional fields MUST have: default
+#   - Do NOT leave "[placeholder]" text in production schemas
+
+name: "[PascalCase for events, SCREAMING_SNAKE for commands]"
+type: "event"  # REQUIRED — one of: event | command
+version: "1.0" # Semantic: "1.0", "1.1" (additive), "2.0" (breaking payload changes)
+description: "[What this event/command represents — one sentence, no TBD, no 'TBD pending']"
+
+# PAYLOAD RULES (enforced by arch-checker, verified by arch-verifier):
+#   REQUIRED per field: name, type, required, example
+#   REQUIRED if optional field: default value
+#   Constraints: strongly recommended for all fields
+#
+#   ALLOWED types:
+#     string          — UTF-8 text
+#     integer         — whole number (no decimals)
+#     float           — decimal number
+#     boolean         — true or false
+#     array<type>     — typed array (e.g., array<string>, array<integer>)
+#     object{field: type, field: type}  — structured object with named fields
+#     enum[val1, val2, val3]            — fixed value set
+#
+#   BANNED types (will fail arch-verifier Level 2 check):
+#     any             — too permissive, prevents type checking
+#     object          — must specify nested fields: object{field: type}
+#     data            — not a type
+#     mixed           — not a type
+#     unknown         — not a type
+#     arbitrary       — not a type
+#
+#   CONSTRAINTS format: "[rule1: value, rule2: value]"
+#   Examples: "[max_length: 255]", "[min: 0, max: 100]", "[pattern: uuid-v4]"
+
+payload:
+  # Example required string field:
+  - name: "[field_name]"
+    type: "string"
+    constraints: "[max_length: 255, pattern: uuid-v4]"
+    example: "550e8400-e29b-41d4-a716-446655440000"
+    required: true
+
+  # Example optional integer field with default:
+  - name: "[another_field]"
+    type: "integer"
+    constraints: "[min: 0, max: 1000]"
+    example: 42
+    required: false
+    default: 0
+
+  # Example enum field:
+  - name: "[status_field]"
+    type: "enum[pending, running, complete, failed]"
+    constraints: "[must be one of the four listed values]"
+    example: "complete"
+    required: true
+
+  # Example structured object field:
+  - name: "[nested_object_field]"
+    type: "object{id: string, name: string, count: integer}"
+    constraints: "[id: uuid-v4, name: max_length 128, count: min 0]"
+    example: '{"id": "abc-123", "name": "example", "count": 5}'
+    required: true
+
+  # Example typed array field:
+  - name: "[list_field]"
+    type: "array<string>"
+    constraints: "[min_items: 1, max_items: 50, each: max_length 255]"
+    example: '["item-one", "item-two"]'
+    required: false
+    default: "[]"
+
+# PRODUCERS: Which agents emit this event/command.
+# Min 1 producer. Use kebab-case agent names (see references/naming-conventions.md).
+# Format: - "[agent-name]"
+producers:
+  - "[agent-name-in-kebab-case]"
+
+# CONSUMERS: Which agents handle this event/command.
+# Min 1 consumer. For commands, this is the handler agent.
+# Format: - "[agent-name]"
+consumers:
+  - "[agent-name-in-kebab-case]"
+
+# ERROR CASES: REQUIRED — at least one error case per event/command.
+# Purpose: Defines what consumers should do when this event signals an error.
+# Each case must have: condition, payload_field, recovery.
+#
+# BANNED in condition: "if something goes wrong", "on error", "in case of failure"
+# GOOD condition: "task_id field references a task that no longer exists in STATE.md"
+# BAD condition: "if there is a problem with the payload"
+#
+# BANNED in recovery: "handle gracefully", "retry as needed", "escalate appropriately"
+# GOOD recovery: "Consumer reads error field, logs the condition, returns
+#                { status: 'failed', reason: 'stale_reference' } to orchestrator"
+# BAD recovery: "Consumer handles the error gracefully."
+error_cases:
+  - condition: "[Specific condition — not 'if something goes wrong']"
+    payload_field: "[Which field in the payload signals or describes the error]"
+    recovery: "[Concrete action the consumer should take — not 'handle gracefully']"
