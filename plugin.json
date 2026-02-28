@@ -1,0 +1,7 @@
+{
+  "name": "arch-gsd",
+  "version": "0.1.0",
+  "description": "Multi-agent architecture design system. Produces verified architecture packages for agentic systems.",
+  "commands": "workflows/",
+  "agents": "agents/"
+}

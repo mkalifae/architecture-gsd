@@ -1,0 +1,51 @@
+{
+  "model_profile": "balanced",
+  "commit_docs": true,
+  "parallelization": true,
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true
+  },
+  "model_profiles": {
+    "quality": {
+      "discuss-system": "opus",
+      "arch-roadmapper": "opus",
+      "context-engineer": "opus",
+      "arch-researcher": "sonnet",
+      "arch-planner": "sonnet",
+      "arch-executor": "sonnet",
+      "arch-verifier": "sonnet",
+      "schema-designer": "sonnet",
+      "failure-analyst": "sonnet",
+      "arch-checker": "haiku",
+      "arch-integrator": "haiku"
+    },
+    "balanced": {
+      "discuss-system": "opus",
+      "arch-roadmapper": "opus",
+      "context-engineer": "opus",
+      "arch-researcher": "sonnet",
+      "arch-planner": "sonnet",
+      "arch-executor": "sonnet",
+      "arch-verifier": "sonnet",
+      "schema-designer": "sonnet",
+      "failure-analyst": "sonnet",
+      "arch-checker": "haiku",
+      "arch-integrator": "haiku"
+    },
+    "budget": {
+      "discuss-system": "sonnet",
+      "arch-roadmapper": "sonnet",
+      "context-engineer": "sonnet",
+      "arch-researcher": "haiku",
+      "arch-planner": "haiku",
+      "arch-executor": "sonnet",
+      "arch-verifier": "haiku",
+      "schema-designer": "haiku",
+      "failure-analyst": "haiku",
+      "arch-checker": "haiku",
+      "arch-integrator": "haiku"
+    }
+  }
+}
