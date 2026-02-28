@@ -114,6 +114,16 @@ None — no external service configuration required.
 - Remaining: arch-executor (03-04), specialized agents (03-05), and execute-phase workflow (03-06)
 - No blockers for remaining Phase 3 plans
 
+## Self-Check: PASSED
+
+- FOUND: agents/arch-researcher.md (319 lines, 7 XML sections, clean detect-stubs)
+- FOUND: agents/arch-roadmapper.md (346 lines, 7 XML sections, clean detect-stubs)
+- FOUND: .planning/phases/03-core-design-pipeline/03-01-SUMMARY.md
+- FOUND commit 8538d75: feat(03-01): implement arch-researcher agent spec
+- FOUND commit 8e410bd: feat(03-01): implement arch-roadmapper agent spec
+- FOUND commit 9169319: fix(03-01): remove stub-pattern false positives
+- FOUND commit 46fbf79: docs(03-01): complete plan — SUMMARY and STATE updated
+
 ---
 *Phase: 03-core-design-pipeline*
 *Completed: 2026-02-28*
