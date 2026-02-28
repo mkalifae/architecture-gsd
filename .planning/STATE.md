@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Given a description of an agentic system, produce a complete, internally consistent, cross-referenced architecture package that a development team can implement without needing to make architectural decisions.
-**Current focus:** Phase 3 — Core Design Pipeline
+**Current focus:** Phase 4 — Verification and Quality
 
 ## Current Position
 
-Phase: 3 of 5 (Core Design Pipeline)
-Plan: 5 of 6 in current phase (plans 01, 02, 03, 04, 05 complete; plan 06 pending)
-Status: Phase 3 In Progress
-Last activity: 2026-02-28 — Completed plan 03-05: full schema-designer, context-engineer, and failure-analyst agent specs (153, 178, 170 lines respectively, all with 7 XML sections and zero stub phrases)
+Phase: 3 of 5 (Core Design Pipeline) — COMPLETE
+Plan: All 6 plans complete
+Status: Phase 3 Complete
+Last activity: 2026-02-28 — Completed plan 03-06: execute-phase full pipeline orchestrator (399 lines, 10 steps, bounded revision loop, wave-parallel execution, context discipline)
 
-Progress: [████████░░] 50%
+Progress: [██████████░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 3.5 min
-- Total execution time: 0.13 hours
+- Total plans completed: 12
+- Average duration: 3.4 min
+- Total execution time: ~0.14 hours
 
 **By Phase:**
 
@@ -29,7 +29,7 @@ Progress: [████████░░] 50%
 |-------|-------|-------|----------|
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | 16 min | 4 min |
 | 2. Intake and Intent Extraction | 2/2 | 5 min | 2.5 min |
-| 3. Core Design Pipeline | 5/6 | ~38 min (03-01: 7 min, 03-04: 7 min, 03-05: 10 min) | ~7.6 min |
+| 3. Core Design Pipeline | 6/6 | ~40 min | ~6.7 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min
@@ -89,6 +89,10 @@ Recent decisions affecting current work:
 - [03-05]: context-engineer handles parallel execution gracefully: events.yaml unavailability is a named failure mode (FM-02) returning gaps_found rather than failing — gap resolves automatically when schema-designer completes
 - [03-05]: detect-stubs false positive on quoted banned phrases — resolved by referencing templates/failure-modes.md by path rather than quoting banned phrases inline in agent body text
 - [03-05]: failure-analyst describes banned recovery phrase requirement via meta-reference to templates/failure-modes.md rather than inlining the phrases — avoids detect-stubs false positives on constraint documentation
+- [03-06]: execute-phase keeps orchestrator context at ~15% by passing paths not content — subagents get fresh 200K windows
+- [03-06]: context-engineer, schema-designer, and failure-analyst are reference specs passed to arch-executor, NOT directly spawned by the orchestrator — keeps orchestrator lean
+- [03-06]: Bounded revision loop escalation hard-stops on iteration 3 with structured gap report — never silently proceeds to execution
+- [03-06]: Wave execution groups by frontmatter wave field; all same-wave plans spawned simultaneously; next wave waits for current wave completion
 
 ### Pending Todos
 
@@ -102,5 +106,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 03-05-PLAN.md — schema-designer (153 lines), context-engineer (178 lines), and failure-analyst (170 lines) agent specs fully implemented. All three pass detect-stubs. Plans 01/02/03/04/05 of Phase 3 complete; plan 06 (execute-phase workflow) is the final remaining plan.
-Resume file: None
+Stopped at: Completed 03-06-PLAN.md — execute-phase full pipeline orchestrator (399 lines, 10 steps). Phase 3 (Core Design Pipeline) is now complete — all 6 plans executed. Ready for Phase 4.
+Resume with: /arch-gsd:execute-phase 4 (after /clear for fresh context)
