@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 3 of 5 (Core Design Pipeline)
-Plan: 4 of 6 in current phase (plans 01, 02, 03, 04 complete; plans 05, 06 pending)
+Plan: 5 of 6 in current phase (plans 01, 02, 03, 04, 05 complete; plan 06 pending)
 Status: Phase 3 In Progress
-Last activity: 2026-02-28 — Completed plan 03-04: full arch-executor agent spec (596 lines, all 7 XML sections, dual-format protocol for all 5 document types including OUTP-03 topology)
+Last activity: 2026-02-28 — Completed plan 03-05: full schema-designer, context-engineer, and failure-analyst agent specs (153, 178, 170 lines respectively, all with 7 XML sections and zero stub phrases)
 
-Progress: [███████░░░] 40%
+Progress: [████████░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 11
 - Average duration: 3.5 min
 - Total execution time: 0.13 hours
 
@@ -29,7 +29,7 @@ Progress: [███████░░░] 40%
 |-------|-------|-------|----------|
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | 16 min | 4 min |
 | 2. Intake and Intent Extraction | 2/2 | 5 min | 2.5 min |
-| 3. Core Design Pipeline | 4/6 | ~28 min (03-01: 7 min, 03-04: 7 min) | ~7 min |
+| 3. Core Design Pipeline | 5/6 | ~38 min (03-01: 7 min, 03-04: 7 min, 03-05: 10 min) | ~7.6 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min
@@ -85,6 +85,10 @@ Recent decisions affecting current work:
 - [03-04]: OUTP-03 topology production requires three artifacts: Mermaid dependency graph, communication channels table (5 columns), and YAML adjacency list with nodes+edges
 - [03-04]: detect-stubs gate is hard — blocks status: "complete" until zero stubs; up to 2 correction iterations before falling back to gaps_found
 - [03-04]: Four status values only: complete, gaps_found, human_needed, failed — no success or error variants to prevent status drift across agents
+- [03-05]: schema-designer is Wave 2 (before arch-executor Wave 3 agent contracts) so event names exist in events.yaml before agent contracts reference them — orphaned event references are a Level 3 verification failure
+- [03-05]: context-engineer handles parallel execution gracefully: events.yaml unavailability is a named failure mode (FM-02) returning gaps_found rather than failing — gap resolves automatically when schema-designer completes
+- [03-05]: detect-stubs false positive on quoted banned phrases — resolved by referencing templates/failure-modes.md by path rather than quoting banned phrases inline in agent body text
+- [03-05]: failure-analyst describes banned recovery phrase requirement via meta-reference to templates/failure-modes.md rather than inlining the phrases — avoids detect-stubs false positives on constraint documentation
 
 ### Pending Todos
 
@@ -98,5 +102,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 03-04-PLAN.md — arch-executor agent spec fully implemented (596 lines, all 7 XML sections, dual-format for all 5 document types, OUTP-03 topology logic). Plans 01/02/03/04 of Phase 3 now complete.
+Stopped at: Completed 03-05-PLAN.md — schema-designer (153 lines), context-engineer (178 lines), and failure-analyst (170 lines) agent specs fully implemented. All three pass detect-stubs. Plans 01/02/03/04/05 of Phase 3 complete; plan 06 (execute-phase workflow) is the final remaining plan.
 Resume file: None
