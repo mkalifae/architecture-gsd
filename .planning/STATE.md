@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 3 of 5 (Core Design Pipeline)
-Plan: 3 of 6 in current phase (plans 01, 02, 03 complete; plans 04, 05, 06 pending)
+Plan: 4 of 6 in current phase (plans 01, 02, 03, 04 complete; plans 05, 06 pending)
 Status: Phase 3 In Progress
-Last activity: 2026-02-28 — Completed plan 03-01: full arch-researcher and arch-roadmapper agent specs (Wave 1 design pipeline agents)
+Last activity: 2026-02-28 — Completed plan 03-04: full arch-executor agent spec (596 lines, all 7 XML sections, dual-format protocol for all 5 document types including OUTP-03 topology)
 
-Progress: [██████░░░░] 36%
+Progress: [███████░░░] 40%
 
 ## Performance Metrics
 
@@ -29,7 +29,7 @@ Progress: [██████░░░░] 36%
 |-------|-------|-------|----------|
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | 16 min | 4 min |
 | 2. Intake and Intent Extraction | 2/2 | 5 min | 2.5 min |
-| 3. Core Design Pipeline | 3/6 | ~21 min (03-01: 7 min) | ~7 min |
+| 3. Core Design Pipeline | 4/6 | ~28 min (03-01: 7 min, 03-04: 7 min) | ~7 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min
@@ -81,6 +81,10 @@ Recent decisions affecting current work:
 - [03-01]: arch-researcher surfaces options+tradeoffs only, never mandates — "should" must always present alternatives to avoid architectural decisions in research output
 - [03-01]: arch-roadmapper complexity signal rule: scale.agents < 5 → 3-phase, 5-15 → 5-phase, >15 → 7-phase; defaults to 5-phase when unparseable
 - [03-01]: detect-stubs false positive pattern: example values in failure mode descriptions (e.g., "TBD", "placeholder") trigger stub detection — rephrase with synonyms
+- [03-04]: arch-executor uses XML section tags (<role> etc.) not markdown ## headers — matches discuss-system.md convention; templates/agent-spec.md is what arch-executor PRODUCES, not how arch-executor itself is formatted
+- [03-04]: OUTP-03 topology production requires three artifacts: Mermaid dependency graph, communication channels table (5 columns), and YAML adjacency list with nodes+edges
+- [03-04]: detect-stubs gate is hard — blocks status: "complete" until zero stubs; up to 2 correction iterations before falling back to gaps_found
+- [03-04]: Four status values only: complete, gaps_found, human_needed, failed — no success or error variants to prevent status drift across agents
 
 ### Pending Todos
 
@@ -94,5 +98,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 03-01-PLAN.md — arch-researcher and arch-roadmapper agent specs fully implemented (Wave 1 design pipeline agents, 319 and 346 lines respectively). Plans 01/02/03 now all complete.
+Stopped at: Completed 03-04-PLAN.md — arch-executor agent spec fully implemented (596 lines, all 7 XML sections, dual-format for all 5 document types, OUTP-03 topology logic). Plans 01/02/03/04 of Phase 3 now complete.
 Resume file: None
