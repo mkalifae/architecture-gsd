@@ -10,25 +10,25 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 2 of 5 (Intake and Intent Extraction)
-Plan: 1 of 2 in current phase
-Status: Phase 2 Plan 1 Complete
-Last activity: 2026-02-28 — Completed 02-01-PLAN (discuss-system agent spec)
+Plan: 2 of 2 in current phase
+Status: Phase 2 Complete
+Last activity: 2026-02-28 — Completed 02-02-PLAN (new-system.md orchestrator workflow)
 
-Progress: [████░░░░░░] 24%
+Progress: [█████░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 4 min
-- Total execution time: 0.12 hours
+- Total plans completed: 6
+- Average duration: 3.5 min
+- Total execution time: 0.13 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | 16 min | 4 min |
-| 2. Intake and Intent Extraction | 1/2 | 3 min | 3 min |
+| 2. Intake and Intent Extraction | 2/2 | 5 min | 2.5 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min
@@ -64,6 +64,9 @@ Recent decisions affecting current work:
 - [02-01]: discuss-system self-validates with validate-context inline (correction loop up to 2 attempts) before returning — new-system.md validation call is a safety net, not primary check
 - [02-01]: Confirmation menu (not clarification) used when all 6 fields extractable from description — avoids interrogating human who already provided complete information
 - [02-01]: FAILURE-04 (contradictory decisions) writes both with conflict-warning YAML comment as last resort rather than hard-blocking — agent always returns something actionable
+- [02-02]: new-system.md uses mkdir -p .arch for scaffolding — not arch-tools.js state init (which creates .planning/phases/ for GSD system, not .arch/ for arch system)
+- [02-02]: Safety-net validate-context runs unconditionally after discuss-system returns — guards against incorrect "complete" status from discuss-system
+- [02-02]: No-argument mode uses freeform prompt rather than error — graceful UX consistent with discuss-system FAILURE-02 recovery pattern
 
 ### Pending Todos
 
@@ -76,5 +79,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 02-01-PLAN — discuss-system full agent spec committed. Phase 2 Plan 1 complete. Next: 02-02-PLAN (new-system.md workflow).
+Stopped at: Completed 02-02-PLAN — new-system.md orchestrator workflow committed. Phase 2 complete (both plans done). Next: Phase 3 (Architecture Roadmapping).
 Resume file: None
