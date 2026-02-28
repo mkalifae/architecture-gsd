@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 3 of 5 (Core Design Pipeline)
-Plan: 3 of 6 in current phase
-Status: Phase 3 In Progress (plans 01, 02, 03 complete; plans 04, 05, 06 pending)
-Last activity: 2026-02-28 — Completed plan 03-03: full arch-checker agent spec with 8-dimension adversarial quality framework
+Plan: 3 of 6 in current phase (plans 01, 02, 03 complete; plans 04, 05, 06 pending)
+Status: Phase 3 In Progress
+Last activity: 2026-02-28 — Completed plan 03-01: full arch-researcher and arch-roadmapper agent specs (Wave 1 design pipeline agents)
 
 Progress: [██████░░░░] 36%
 
@@ -29,6 +29,7 @@ Progress: [██████░░░░] 36%
 |-------|-------|-------|----------|
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | 16 min | 4 min |
 | 2. Intake and Intent Extraction | 2/2 | 5 min | 2.5 min |
+| 3. Core Design Pipeline | 3/6 | ~21 min (03-01: 7 min) | ~7 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min
@@ -76,6 +77,10 @@ Recent decisions affecting current work:
 - [03-03]: arch-checker strictly read-only — PLAN.md modifications are arch-planner's responsibility in revision mode; enforced as explicit constraint
 - [03-03]: Bounded revision loop capped at 3 iterations with mandatory escalate status — prevents infinite orchestration loops when blockers are unresolvable by arch-planner alone
 - [03-03]: FAILURE-03 (rubber-stamp false positive) documented as framing failure — prevention is adversarial framing, detection is zero-findings on large plans (>5 tasks)
+- [03-01]: Agent spec body format uses XML tags (<role> etc.) not ## markdown headers — discovered by inspecting discuss-system.md reference; template format differs from convention
+- [03-01]: arch-researcher surfaces options+tradeoffs only, never mandates — "should" must always present alternatives to avoid architectural decisions in research output
+- [03-01]: arch-roadmapper complexity signal rule: scale.agents < 5 → 3-phase, 5-15 → 5-phase, >15 → 7-phase; defaults to 5-phase when unparseable
+- [03-01]: detect-stubs false positive pattern: example values in failure mode descriptions (e.g., "TBD", "placeholder") trigger stub detection — rephrase with synonyms
 
 ### Pending Todos
 
@@ -89,5 +94,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 03-02-PLAN.md — arch-planner agent spec implemented with ARCHITECTURE_DEPENDENCY_RULES wave assignment algorithm (413 lines, all 7 XML sections, resolves wave dependency research concern).
+Stopped at: Completed 03-01-PLAN.md — arch-researcher and arch-roadmapper agent specs fully implemented (Wave 1 design pipeline agents, 319 and 346 lines respectively). Plans 01/02/03 now all complete.
 Resume file: None
