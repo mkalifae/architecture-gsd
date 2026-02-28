@@ -67,6 +67,10 @@ Recent decisions affecting current work:
 - [02-02]: new-system.md uses mkdir -p .arch for scaffolding — not arch-tools.js state init (which creates .planning/phases/ for GSD system, not .arch/ for arch system)
 - [02-02]: Safety-net validate-context runs unconditionally after discuss-system returns — guards against incorrect "complete" status from discuss-system
 - [02-02]: No-argument mode uses freeform prompt rather than error — graceful UX consistent with discuss-system FAILURE-02 recovery pattern
+- [03-02]: arch-planner writes PLAN.md using GSD-compatible task XML format (<files><action><verify><done>) for compatibility with detect-stubs and arch-checker plan quality checks
+- [03-02]: Max 3 tasks per PLAN.md enforced as hard constraint (not guideline) to maintain arch-executor context budget within 50% utilization target per plan
+- [03-02]: Locked decisions from CONTEXT.md honored without challenge — wave ordering overridden when necessary, override documented in PLAN.md action text, warning returned (not error)
+- [03-02]: ARCHITECTURE_DEPENDENCY_RULES encodes domain ordering: event-schema (Wave 1) -> agent-contract (after events) -> topology/failure-modes (after agents); context-flows parallels agent-contract
 - [03-03]: arch-checker uses haiku model — adversarial plan analysis needs iteration speed, not opus reasoning; haiku sufficient for pattern-matching across PLAN.md structure
 - [03-03]: Adversarial framing must appear in first 3 sentences of Role — cannot be buried where LLM skims past it; prominence is a design requirement
 - [03-03]: arch-checker strictly read-only — PLAN.md modifications are arch-planner's responsibility in revision mode; enforced as explicit constraint
@@ -79,10 +83,11 @@ None.
 
 ### Blockers/Concerns
 
-- [Pre-Phase 1]: Research flags Phase 3 (arch-planner wave dependency design) and Phase 4 (Level 4 YAML graph traversal) as needing deeper research during planning — revisit before locking those phase plans
+- [Pre-Phase 1, RESOLVED by 03-02]: Research flagged Phase 3 (arch-planner wave dependency design) as needing deeper research — RESOLVED: ARCHITECTURE_DEPENDENCY_RULES encodes the wave assignment algorithm in arch-planner.md execution_flow Step 7
+- [Pre-Phase 1]: Phase 4 (Level 4 YAML graph traversal) still needs deeper research during Phase 4 planning — revisit before locking Phase 4 plans
 
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 03-03-PLAN.md — arch-checker agent spec implemented. Plans 03-04 (arch-planner), 03-05 (arch-executor), and other wave 1 plans remain. Wave 2 (03-06 execute-phase) pending all wave 1 completions.
+Stopped at: Completed 03-02-PLAN.md — arch-planner agent spec implemented with ARCHITECTURE_DEPENDENCY_RULES wave assignment algorithm (413 lines, all 7 XML sections, resolves wave dependency research concern).
 Resume file: None
