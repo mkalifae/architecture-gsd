@@ -5,29 +5,30 @@
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Given a description of an agentic system, produce a complete, internally consistent, cross-referenced architecture package that a development team can implement without needing to make architectural decisions.
-**Current focus:** Phase 1 — Foundation, Tooling, and Agent Scaffold
+**Current focus:** Phase 2 — Intake and Intent Extraction
 
 ## Current Position
 
-Phase: 1 of 5 (Foundation, Tooling, and Agent Scaffold)
-Plan: 4 of 4 in current phase
-Status: Phase 1 Complete
-Last activity: 2026-02-28 — Completed 01-04-PLAN (templates + reference documents)
+Phase: 2 of 5 (Intake and Intent Extraction)
+Plan: 1 of 2 in current phase
+Status: Phase 2 Plan 1 Complete
+Last activity: 2026-02-28 — Completed 02-01-PLAN (discuss-system agent spec)
 
-Progress: [████░░░░░░] 20%
+Progress: [████░░░░░░] 24%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 4 min
-- Total execution time: 0.10 hours
+- Total execution time: 0.12 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | 16 min | 4 min |
+| 2. Intake and Intent Extraction | 1/2 | 3 min | 3 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min
@@ -59,6 +60,10 @@ Recent decisions affecting current work:
 - [01-04]: Templates encode verification rules as HTML comments within sections — co-location makes rules discoverable by arch-checker without separate lookup
 - [01-04]: References use COMPLETE/INCOMPLETE paired examples rather than prose-only descriptions — arch-checker needs concrete benchmarks, not abstract principles
 - [01-04]: Verification levels defined incrementally with exact check descriptions — arch-verifier Phase 4 implementation can treat verification-patterns.md as a specification
+- [02-01]: Gray-area menu marks non-goals as pre-selected REQUIRED — human cannot deselect non-goals; enforced at UX level and pre-flight check, not just validation
+- [02-01]: discuss-system self-validates with validate-context inline (correction loop up to 2 attempts) before returning — new-system.md validation call is a safety net, not primary check
+- [02-01]: Confirmation menu (not clarification) used when all 6 fields extractable from description — avoids interrogating human who already provided complete information
+- [02-01]: FAILURE-04 (contradictory decisions) writes both with conflict-warning YAML comment as last resort rather than hard-blocking — agent always returns something actionable
 
 ### Pending Todos
 
@@ -71,5 +76,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 01-04-PLAN — all Phase 1 templates and reference documents committed. Phase 1 is complete.
+Stopped at: Completed 02-01-PLAN — discuss-system full agent spec committed. Phase 2 Plan 1 complete. Next: 02-02-PLAN (new-system.md workflow).
 Resume file: None
