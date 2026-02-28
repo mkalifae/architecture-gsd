@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 1 of 5 (Foundation, Tooling, and Agent Scaffold)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-02-28 — Completed 01-03-PLAN (naming conventions + CONTEXT.md schema)
+Plan: 4 of 4 in current phase
+Status: Phase 1 Complete
+Last activity: 2026-02-28 — Completed 01-04-PLAN (templates + reference documents)
 
-Progress: [██░░░░░░░░] 15%
+Progress: [████░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 3 min
-- Total execution time: 0.08 hours
+- Total plans completed: 4
+- Average duration: 4 min
+- Total execution time: 0.10 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation, Tooling, and Agent Scaffold | 3/4 | 8 min | 3 min |
+| 1. Foundation, Tooling, and Agent Scaffold | 4/4 | 16 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min
+- Last 5 plans: 4 min
 - Trend: -
 
 *Updated after each plan completion*
@@ -56,6 +56,9 @@ Recent decisions affecting current work:
 - [Phase 01]: CONTEXT.md schema defines all 6 fields as complete Phase 2 contract — no revision needed when discuss-system is implemented
 - [Phase 01]: scale field is structured YAML object not flat string — enables programmatic reasoning about agents/throughput/latency
 - [Phase 01]: locked-decisions can be empty array unlike non-goals — a system may have no pre-made architectural decisions at intake time
+- [01-04]: Templates encode verification rules as HTML comments within sections — co-location makes rules discoverable by arch-checker without separate lookup
+- [01-04]: References use COMPLETE/INCOMPLETE paired examples rather than prose-only descriptions — arch-checker needs concrete benchmarks, not abstract principles
+- [01-04]: Verification levels defined incrementally with exact check descriptions — arch-verifier Phase 4 implementation can treat verification-patterns.md as a specification
 
 ### Pending Todos
 
@@ -68,5 +71,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 01-02-PLAN — arch-tools.js CLI utility with all Phase 1 commands committed
+Stopped at: Completed 01-04-PLAN — all Phase 1 templates and reference documents committed. Phase 1 is complete.
 Resume file: None
