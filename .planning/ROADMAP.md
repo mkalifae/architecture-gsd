@@ -12,7 +12,7 @@ Architecture GSD is a standalone multi-agent CLI tool that takes natural languag
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation, Tooling, and Agent Scaffold** - Establish the plugin structure, arch-tools.js utility, CONTEXT.md schema, canonical naming conventions, design document templates, and model profiles that every subsequent phase depends on
+- [x] **Phase 1: Foundation, Tooling, and Agent Scaffold** - Establish the plugin structure, arch-tools.js utility, CONTEXT.md schema, canonical naming conventions, design document templates, and model profiles that every subsequent phase depends on
 - [ ] **Phase 2: Intake and Intent Extraction** - Build the discuss-system agent and /arch-gsd:new-system workflow so a human can describe a system in natural language and receive a structured, non-prose CONTEXT.md with explicit fields and mandatory non-goals
 - [ ] **Phase 3: Core Design Pipeline** - Implement the researcher → roadmapper → planner → checker → executor chain plus all three specialized agents (context-engineer, schema-designer, failure-analyst), the /arch-gsd:execute-phase workflow, wave-based parallelization, and all primary output documents
 - [ ] **Phase 4: Verification, Integration, and Quality Gates** - Complete arch-verifier and arch-integrator, the full arch-tools.js verification engine with YAML graph traversal, all four verification levels, phase-boundary digests, INTEGRATION-REPORT.md, and MANIFEST.md
@@ -153,7 +153,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation, Tooling, and Agent Scaffold | 0/4 | Planned | - |
+| 1. Foundation, Tooling, and Agent Scaffold | 4/4 | ✓ Complete | 2026-02-27 |
 | 2. Intake and Intent Extraction | 0/2 | Not started | - |
 | 3. Core Design Pipeline | 0/7 | Not started | - |
 | 4. Verification, Integration, and Quality Gates | 0/5 | Not started | - |
