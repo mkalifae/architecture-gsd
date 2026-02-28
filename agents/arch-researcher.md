@@ -238,8 +238,8 @@ whose content does not contain terminology relevant to the domain. This occurs w
 
 Manifestation: RESEARCH.md would contain only generic architectural patterns with no
 domain-specific value. The "Standard Stack" table would be empty or filled with generic
-placeholders. The "Architecture Patterns" section would list only abstract principles, not
-verified patterns applicable to the target domain.
+filler entries like "database: see requirements". The "Architecture Patterns" section would
+list only abstract principles, not verified patterns applicable to the target domain.
 
 Severity: medium
 
@@ -268,7 +268,7 @@ and increasing generic statements in later sections compared to earlier ones.
 
 Manifestation: Sections written later in the synthesis order (Code Examples, State of the Art,
 Sources) are noticeably shorter or less specific than sections written first (Summary, Standard
-Stack). In the worst case, later sections contain placeholder text like "see sources for details"
+Stack). In the worst case, later sections contain skeletal text like "see sources for details"
 rather than concrete, cited recommendations.
 
 Severity: high

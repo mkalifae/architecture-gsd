@@ -292,7 +292,7 @@ FAILURE-03: scale.agents Field Cannot Be Parsed for Complexity Signal
 
 Trigger: The scale field in CONTEXT.md does not exist, or scale.agents is missing, or
 scale.agents contains a value that is neither a parseable integer nor a range pattern
-(e.g., "many", "varies", "TBD", or the scale field is a flat string rather than a
+(e.g., "many", "varies", "unspecified", or the scale field is a flat string rather than a
 structured object with an agents sub-field).
 
 Manifestation: arch-roadmapper cannot determine whether to use the 3-phase, 5-phase, or
