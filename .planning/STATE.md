@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 3 of 5 (Core Design Pipeline)
-Plan: 0 of 6 in current phase
-Status: Phase 3 Planned (6 plans created, ready for execution)
-Last activity: 2026-02-28 — Created 6 PLAN.md files for Phase 3 (arch-researcher, arch-roadmapper, arch-planner, arch-checker, arch-executor, specialized agents, execute-phase workflow)
+Plan: 3 of 6 in current phase
+Status: Phase 3 In Progress (plans 01, 02, 03 complete; plans 04, 05, 06 pending)
+Last activity: 2026-02-28 — Completed plan 03-03: full arch-checker agent spec with 8-dimension adversarial quality framework
 
-Progress: [█████░░░░░] 30%
+Progress: [██████░░░░] 36%
 
 ## Performance Metrics
 
@@ -67,6 +67,11 @@ Recent decisions affecting current work:
 - [02-02]: new-system.md uses mkdir -p .arch for scaffolding — not arch-tools.js state init (which creates .planning/phases/ for GSD system, not .arch/ for arch system)
 - [02-02]: Safety-net validate-context runs unconditionally after discuss-system returns — guards against incorrect "complete" status from discuss-system
 - [02-02]: No-argument mode uses freeform prompt rather than error — graceful UX consistent with discuss-system FAILURE-02 recovery pattern
+- [03-03]: arch-checker uses haiku model — adversarial plan analysis needs iteration speed, not opus reasoning; haiku sufficient for pattern-matching across PLAN.md structure
+- [03-03]: Adversarial framing must appear in first 3 sentences of Role — cannot be buried where LLM skims past it; prominence is a design requirement
+- [03-03]: arch-checker strictly read-only — PLAN.md modifications are arch-planner's responsibility in revision mode; enforced as explicit constraint
+- [03-03]: Bounded revision loop capped at 3 iterations with mandatory escalate status — prevents infinite orchestration loops when blockers are unresolvable by arch-planner alone
+- [03-03]: FAILURE-03 (rubber-stamp false positive) documented as framing failure — prevention is adversarial framing, detection is zero-findings on large plans (>5 tasks)
 
 ### Pending Todos
 
@@ -79,5 +84,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Phase 3 planning complete — 6 PLAN.md files created and validated. Wave 1 (plans 03-01 through 03-05) ready for parallel execution. Wave 2 (plan 03-06) depends on all Wave 1 completions. Next: /gsd:execute-phase 3.
+Stopped at: Completed 03-03-PLAN.md — arch-checker agent spec implemented. Plans 03-04 (arch-planner), 03-05 (arch-executor), and other wave 1 plans remain. Wave 2 (03-06 execute-phase) pending all wave 1 completions.
 Resume file: None
