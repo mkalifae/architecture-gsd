@@ -63,8 +63,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — discuss-system agent spec: full body with 10-step adaptive questioning strategy, grouped gray-area menu, mandatory non-goals enforcement, inline validate-context
-- [ ] 02-02-PLAN.md — /arch-gsd:new-system workflow: directory scaffolding, discuss-system spawn, return handling, STATE.md initialization (50-70 lines)
+- [x] 02-01-PLAN.md — discuss-system agent spec: full body with 10-step adaptive questioning strategy, grouped gray-area menu, mandatory non-goals enforcement, inline validate-context
+- [x] 02-02-PLAN.md — /arch-gsd:new-system workflow: directory scaffolding, discuss-system spawn, return handling, STATE.md initialization (50-70 lines)
 
 ---
 
@@ -154,7 +154,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | ✓ Complete | 2026-02-27 |
-| 2. Intake and Intent Extraction | 0/2 | Not started | - |
+| 2. Intake and Intent Extraction | 2/2 | ✓ Complete | 2026-02-28 |
 | 3. Core Design Pipeline | 0/7 | Not started | - |
 | 4. Verification, Integration, and Quality Gates | 0/5 | Not started | - |
 | 5. Self-Design Validation and CLI Polish | 0/3 | Not started | - |
