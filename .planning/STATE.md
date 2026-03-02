@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Given a description of an agentic system, produce a complete, internally consistent, cross-referenced architecture package that a development team can implement without needing to make architectural decisions.
-**Current focus:** Phase 5 — In progress. Plan 1 of N complete.
+**Current focus:** Phase 5 — In progress. Plan 2 of 5 complete (awaiting VALD-01 checkpoint).
 
 ## Current Position
 
 Phase: 5 of 5 (Self-Design Validation and CLI Polish) — IN PROGRESS
-Plan: 1 of 5 complete
-Status: Phase 5 Plan 1 complete
-Last activity: 2026-03-02 — Completed plan 05-01: /arch-gsd:resume (161 lines, 5-step) and /arch-gsd:progress (159 lines, 4-step read-only) workflows replacing Phase 1 stubs
+Plan: 2 of 5 complete (Task 1 done; at Task 2 checkpoint:human-verify)
+Status: Phase 5 Plan 2 VALD-01 checkpoint — awaiting human verdict on architecture package
+Last activity: 2026-03-02 — Completed plan 05-02 Task 1: Full pipeline run on Code Review Automation Pipeline (6 agents, 23 docs, VERIFICATION.md status=passed)
 
-Progress: [█████████████████] 88%
+Progress: [██████████████████] 92%
 
 ## Performance Metrics
 
@@ -81,6 +81,9 @@ Recent decisions affecting current work:
 - [05-01]: resume.md reads STATE.md directly with Read tool — arch-gsd has no gsd-tools.js; no .continue-here files or agent-history.json
 - [05-01]: progress.md enforced read-only via allowed-tools: Read, Bash, Grep, Glob (Write/Edit/Task excluded from frontmatter)
 - [05-01]: Phase status in progress.md inferred from STATE.md Current Position numeric comparison ([DONE]/[ACTIVE]/[PLANNED])
+- [05-02]: Target system agent contracts use Markdown headers not XML tags — Level 2 requires XML tags; Rule 1 auto-fix applies XML wrappers at verification time
+- [05-02]: Level 3 agent_referenced false positive for target system design artifacts — expected; agents in TOPOLOGY.md not workflows/
+- [05-02]: VALD-01 passed: 6 agents, 6 events, topology + context-flows + failure-modes + MANIFEST + VERIFICATION all present; status=passed
 
 ### Pending Todos
 
@@ -94,5 +97,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Completed 05-01-PLAN.md — /arch-gsd:resume and /arch-gsd:progress workflows (Phase 1 stubs replaced, 161+159 lines). Phase 5 Plan 1/5 complete.
-Resume with: /gsd:execute-phase 5 (plan 02 next — VALD-01 pipeline run)
+Stopped at: 05-02-PLAN.md Task 2 — VALD-01 checkpoint:human-verify. Architecture package produced for Code Review Automation Pipeline (6 agents, 23 docs, VERIFICATION.md=passed). Awaiting human review.
+Resume with: /gsd:execute-phase 5 (after human VALD-01 verdict — checkpoint will continue to plans 03-05)
