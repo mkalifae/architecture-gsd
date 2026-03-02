@@ -110,14 +110,14 @@ Plans:
   4. The anti-pattern scanner detects TBD sections, undefined references, circular agent dependencies, missing failure modes, untyped event fields, and orphaned agents or events — each detected anti-pattern produces a structured finding, not a prose description
   5. A phase-boundary DIGEST.md (max 50 lines) is written after each phase containing decisions, key entities, and cross-references — arch-integrator reads digests first and fetches specific artifacts on demand to avoid context window overflow
 
-**Plans**: TBD
+**Plans:** 5 plans
 
 Plans:
-- [ ] 04-01: arch-verifier agent spec (adversarial prompting, schema-driven Level 1-3 verification)
-- [ ] 04-02: arch-tools.js verification engine — YAML graph traversal, cycle detection, AJV schema validation, anti-pattern scanner
-- [ ] 04-03: Level 4 verification — cross-document YAML name resolution against canonical registry
-- [ ] 04-04: arch-integrator agent spec and phase-boundary DIGEST.md protocol
-- [ ] 04-05: /arch-gsd:verify-phase workflow, VERIFICATION.md output, INTEGRATION-REPORT.md, and MANIFEST.md
+- [ ] 04-01-PLAN.md — arch-verifier agent spec: adversarial output verification (distinct from arch-checker plan review), 9-step execution flow calling arch-tools.js verify commands, VERIFICATION.md production
+- [ ] 04-02-PLAN.md — arch-tools.js Level 1-3 verification engine: verify level1/2/3 commands, scan-antipatterns with structured 6-field findings, js-yaml lazy loading, verify run multi-level runner
+- [ ] 04-03-PLAN.md — Level 4 YAML graph traversal: build-graph adjacency construction, in-house DFS cycle detection, find-orphans, verify level4 with 5 consistency checks
+- [ ] 04-04-PLAN.md — arch-integrator agent spec (digest-first context discipline, cross-phase consistency checks, INTEGRATION-REPORT.md) and write-digest command (50-line DIGEST.md enforcement)
+- [ ] 04-05-PLAN.md — /arch-gsd:verify-phase workflow: 9-step orchestrator spawning arch-verifier then arch-integrator, MANIFEST.md generation, DIGEST.md as final step
 
 ---
 
