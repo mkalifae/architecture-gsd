@@ -1,0 +1,425 @@
+---
+name: events
+description: "Inter-agent state transition events for Architecture GSD pipeline — 11 events covering all agent handoffs from system intake through verification"
+domain: "Architecture GSD — Multi-Agent Architecture Design System"
+event_count: 11
+---
+
+# Architecture GSD — Inter-Agent Events
+
+events:
+
+  - name: SystemIntakeReceived
+    type: event
+    version: "1.0"
+    description: "Human architect has submitted a system description. Triggers discuss-system to start the intake dialogue."
+    payload:
+      fields:
+        - name: system_description
+          type: string
+          constraints: "Non-empty, max 10000 chars"
+          example: "Code review automation pipeline with webhook trigger and 6 agents"
+          required: true
+        - name: intake_session_id
+          type: string
+          constraints: "UUID format"
+          example: "a3b4c5d6-e7f8-9012-abcd-ef0123456789"
+          required: true
+        - name: submitted_at
+          type: string
+          constraints: "ISO-8601 timestamp"
+          example: "2026-03-02T10:00:00Z"
+          required: true
+    producers:
+      - agent: new-system.md workflow
+        action: "Written to disk as CONTEXT.md upon human input submission"
+    consumers:
+      - agent: discuss-system
+        action: "Reads system_description to start intake dialogue and ask clarifying questions"
+    error_cases:
+      - condition: "system_description is empty or whitespace-only"
+        response: "discuss-system returns clarification prompt — no CONTEXT.md written"
+
+  - name: ContextValidated
+    type: event
+    version: "1.0"
+    description: "discuss-system has produced a validated CONTEXT.md. Triggers arch-researcher to begin research."
+    payload:
+      fields:
+        - name: context_path
+          type: string
+          constraints: "Valid file path, file must exist"
+          example: ".arch/CONTEXT.md"
+          required: true
+        - name: domain
+          type: string
+          constraints: "Non-empty string matching domain field in CONTEXT.md"
+          example: "Code Review Automation Pipeline"
+          required: true
+        - name: actor_count
+          type: integer
+          constraints: "Min 1, max 50"
+          example: 4
+          required: true
+        - name: validation_attempts
+          type: integer
+          constraints: "Min 1, max 2 (discuss-system max correction attempts)"
+          example: 1
+          required: true
+    producers:
+      - agent: discuss-system
+        action: "Emitted when validate-context returns valid: true after CONTEXT.md write"
+    consumers:
+      - agent: arch-researcher
+        action: "Reads context_path to load domain for research query composition"
+      - agent: execute-phase workflow
+        action: "Uses context_path to confirm CONTEXT.md exists before spawning research wave"
+    error_cases:
+      - condition: "validate-context returns valid: false after 2 attempts"
+        response: "discuss-system returns gaps_found — no ContextValidated emitted"
+
+  - name: ResearchComplete
+    type: event
+    version: "1.0"
+    description: "arch-researcher has completed domain research and written RESEARCH.md. Triggers arch-roadmapper."
+    payload:
+      fields:
+        - name: research_path
+          type: string
+          constraints: "Valid file path, file must exist"
+          example: ".arch/RESEARCH.md"
+          required: true
+        - name: confidence
+          type: string
+          constraints: "One of: HIGH, MEDIUM, LOW"
+          example: "HIGH"
+          required: true
+        - name: sources_count
+          type: integer
+          constraints: "Min 0"
+          example: 8
+          required: true
+        - name: open_questions_count
+          type: integer
+          constraints: "Min 0"
+          example: 2
+          required: true
+    producers:
+      - agent: arch-researcher
+        action: "Emitted after RESEARCH.md written and all required sections populated"
+    consumers:
+      - agent: arch-roadmapper
+        action: "Reads research_path for standard stack, patterns, pitfalls to inform ROADMAP.md"
+    error_cases:
+      - condition: "confidence is LOW"
+        response: "arch-roadmapper uses conservative phase templates with more checkpoints"
+
+  - name: RoadmapComplete
+    type: event
+    version: "1.0"
+    description: "arch-roadmapper has produced ROADMAP.md with phase decomposition. Triggers arch-planner for each phase."
+    payload:
+      fields:
+        - name: roadmap_path
+          type: string
+          constraints: "Valid file path, file must exist"
+          example: ".arch/ROADMAP.md"
+          required: true
+        - name: phase_count
+          type: integer
+          constraints: "Min 1, max 10"
+          example: 5
+          required: true
+        - name: total_artifact_count
+          type: integer
+          constraints: "Min phase_count (at least 1 artifact per phase)"
+          example: 23
+          required: true
+    producers:
+      - agent: arch-roadmapper
+        action: "Emitted after ROADMAP.md written with all phases and artifact lists"
+    consumers:
+      - agent: execute-phase workflow
+        action: "Reads phase_count to schedule arch-planner invocations per phase"
+      - agent: arch-planner
+        action: "Reads roadmap_path to extract phase goal and artifact list for decomposition"
+    error_cases:
+      - condition: "phase_count is 0"
+        response: "execute-phase returns failed — cannot proceed without phases"
+
+  - name: PlanProduced
+    type: event
+    version: "1.0"
+    description: "arch-planner has written PLAN.md files for a phase. Triggers arch-checker for review."
+    payload:
+      fields:
+        - name: phase_name
+          type: string
+          constraints: "Non-empty, kebab-case"
+          example: "agent-contracts"
+          required: true
+        - name: plan_paths
+          type: array<string>
+          constraints: "Min 1 element, all paths must exist on disk"
+          example: [".arch/phases/agent-contracts/01-PLAN.md"]
+          required: true
+        - name: wave_count
+          type: integer
+          constraints: "Min 1"
+          example: 2
+          required: true
+        - name: total_tasks
+          type: integer
+          constraints: "Min 1, max 15"
+          example: 11
+          required: true
+        - name: status
+          type: string
+          constraints: "One of: complete, gaps_found"
+          example: "complete"
+          required: true
+    producers:
+      - agent: arch-planner
+        action: "Emitted after all PLAN.md files written and detect-stubs validation passed"
+    consumers:
+      - agent: arch-checker
+        action: "Reads plan_paths to run 8-dimension adversarial quality check"
+    error_cases:
+      - condition: "status is gaps_found"
+        response: "arch-checker reviews plans with known gaps — may return ISSUES_FOUND"
+
+  - name: PlanApproved
+    type: event
+    version: "1.0"
+    description: "arch-checker has approved all PLAN.md files for a phase. Triggers arch-executor for each task."
+    payload:
+      fields:
+        - name: phase_name
+          type: string
+          constraints: "Non-empty, kebab-case"
+          example: "agent-contracts"
+          required: true
+        - name: approved_plans
+          type: array<string>
+          constraints: "Min 1 element, all paths must exist on disk"
+          example: [".arch/phases/agent-contracts/01-PLAN.md"]
+          required: true
+        - name: iteration
+          type: integer
+          constraints: "Min 1, max 3 (bounded revision loop limit)"
+          example: 1
+          required: true
+    producers:
+      - agent: arch-checker
+        action: "Emitted when all plan quality dimensions pass (PASSED result)"
+    consumers:
+      - agent: execute-phase workflow
+        action: "Reads approved_plans to spawn arch-executor for each wave of tasks"
+    error_cases:
+      - condition: "iteration reaches 3 and plan still has issues"
+        response: "execute-phase escalates to human_needed — no PlanApproved emitted"
+
+  - name: DocumentWritten
+    type: event
+    version: "1.0"
+    description: "arch-executor has completed writing a design document. Aggregated by execute-phase to track phase completion."
+    payload:
+      fields:
+        - name: document_path
+          type: string
+          constraints: "Valid file path under design/ directory"
+          example: "design/agents/arch-planner.md"
+          required: true
+        - name: document_type
+          type: string
+          constraints: "One of: agent-contract, event-schema, topology, context-flow, failure-catalog"
+          example: "agent-contract"
+          required: true
+        - name: status
+          type: string
+          constraints: "One of: complete, gaps_found, human_needed, failed"
+          example: "complete"
+          required: true
+        - name: stubs_found
+          type: integer
+          constraints: "Min 0"
+          example: 0
+          required: true
+        - name: auto_flagged
+          type: array<string>
+          constraints: "Empty array if no auto-flags"
+          example: []
+          required: true
+          default: []
+    producers:
+      - agent: arch-executor
+        action: "Emitted after detect-stubs and validate-names validation passes"
+    consumers:
+      - agent: execute-phase workflow
+        action: "Tracks document_path in completed set; aggregates status across all tasks in wave"
+    error_cases:
+      - condition: "status is gaps_found"
+        response: "execute-phase logs gap; continues to next task; reports gaps in phase summary"
+
+  - name: VerificationComplete
+    type: event
+    version: "1.0"
+    description: "arch-verifier has completed the 4-level verification stack for a phase. Triggers arch-integrator or correction loop."
+    payload:
+      fields:
+        - name: verification_md_path
+          type: string
+          constraints: "Valid file path, file must exist"
+          example: "design/VERIFICATION.md"
+          required: true
+        - name: status
+          type: string
+          constraints: "One of: passed, gaps_found, human_needed, failed"
+          example: "passed"
+          required: true
+        - name: levels_run
+          type: array<integer>
+          constraints: "Subset of [1, 2, 3, 4]; min 1 element"
+          example: [1, 2, 3, 4]
+          required: true
+        - name: findings_count
+          type: integer
+          constraints: "Min 0"
+          example: 0
+          required: true
+        - name: correction_round
+          type: integer
+          constraints: "Min 0, max 2 (convergence cap)"
+          example: 0
+          required: true
+          default: 0
+    producers:
+      - agent: arch-verifier
+        action: "Emitted after VERIFICATION.md written with final status"
+    consumers:
+      - agent: arch-integrator
+        action: "Reads status field — proceeds only if passed; reads findings for integration checks"
+      - agent: verify-phase workflow
+        action: "Routes to correction mode if gaps_found or to human if human_needed"
+    error_cases:
+      - condition: "status is human_needed"
+        response: "verify-phase halts and presents findings to human architect"
+
+  - name: IntegrationComplete
+    type: event
+    version: "1.0"
+    description: "arch-integrator has completed cross-phase consistency checks. Triggers MANIFEST.md generation."
+    payload:
+      fields:
+        - name: integration_report_path
+          type: string
+          constraints: "Valid file path, file must exist"
+          example: "design/INTEGRATION-REPORT.md"
+          required: true
+        - name: status
+          type: string
+          constraints: "One of: passed, gaps_found, human_needed"
+          example: "passed"
+          required: true
+        - name: orphaned_agents
+          type: integer
+          constraints: "Min 0"
+          example: 0
+          required: true
+        - name: circular_dependencies
+          type: integer
+          constraints: "Min 0"
+          example: 0
+          required: true
+        - name: name_resolution_failures
+          type: integer
+          constraints: "Min 0"
+          example: 0
+          required: true
+    producers:
+      - agent: arch-integrator
+        action: "Emitted after INTEGRATION-REPORT.md written with cross-phase check results"
+    consumers:
+      - agent: verify-phase workflow
+        action: "Uses status to determine if MANIFEST.md generation should proceed"
+    error_cases:
+      - condition: "circular_dependencies > 0"
+        response: "arch-integrator returns human_needed — cycle may be intentional bounded revision loop"
+
+  - name: DigestWritten
+    type: event
+    version: "1.0"
+    description: "verify-phase workflow has written the phase-boundary DIGEST.md. Signals phase completion."
+    payload:
+      fields:
+        - name: digest_path
+          type: string
+          constraints: "Valid file path, file must exist, max 50 lines"
+          example: "design/digests/phase-05-DIGEST.md"
+          required: true
+        - name: phase_name
+          type: string
+          constraints: "Non-empty, kebab-case"
+          example: "verification-and-integration"
+          required: true
+        - name: documents_indexed
+          type: integer
+          constraints: "Min 1"
+          example: 17
+          required: true
+    producers:
+      - agent: verify-phase workflow
+        action: "Written directly by orchestrator at Step 8 after MANIFEST.md completed"
+    consumers:
+      - agent: arch-integrator
+        action: "Reads digest at startup (digest-first pattern) before fetching full artifacts"
+    error_cases:
+      - condition: "digest exceeds 50 lines"
+        response: "verify-phase truncates to 50 lines and logs a warning — digest cap is hard"
+
+  - name: GapFound
+    type: event
+    version: "1.0"
+    description: "Any agent detected a gap (stubs, missing cross-references, verification failure). Triggers correction mode or human escalation."
+    payload:
+      fields:
+        - name: agent
+          type: string
+          constraints: "Name of the agent that found the gap, kebab-case"
+          example: "arch-verifier"
+          required: true
+        - name: gap_type
+          type: string
+          constraints: "One of: stub, missing_section, cross_reference_missing, name_mismatch, cycle_detected, scope_mismatch"
+          example: "stub"
+          required: true
+        - name: file
+          type: string
+          constraints: "Path to the document with the gap"
+          example: "design/agents/arch-executor.md"
+          required: true
+        - name: detail
+          type: string
+          constraints: "Non-empty human-readable description of the gap"
+          example: "detect-stubs found 2 stub phrases in <failure_modes> section"
+          required: true
+        - name: correction_possible
+          type: boolean
+          constraints: "true if arch-executor can fix without human input; false if human_needed"
+          example: true
+          required: true
+    producers:
+      - agent: arch-verifier
+        action: "Emitted for each Level 1-4 finding with result: fail in VERIFICATION.md"
+      - agent: arch-checker
+        action: "Emitted when ISSUES_FOUND detected in plan quality review"
+      - agent: arch-executor
+        action: "Emitted when detect-stubs finds stubs after document write"
+    consumers:
+      - agent: execute-phase workflow
+        action: "Logs gap; routes to correction mode if correction_possible=true; routes to human_needed if false"
+      - agent: failure-analyst
+        action: "Analyzes gap patterns to identify systemic failure modes in the pipeline"
+    error_cases:
+      - condition: "correction_possible is false for multiple gaps"
+        response: "execute-phase escalates to human with aggregated gap list"
