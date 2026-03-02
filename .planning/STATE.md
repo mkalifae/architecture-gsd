@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 4 of 5 (Verification, Integration, and Quality Gates) — IN PROGRESS
-Plan: 3 of 5 complete
+Plan: 4 of 5 complete
 Status: Phase 4 Active
-Last activity: 2026-03-02 — Completed plan 04-03: Level 4 YAML graph traversal in arch-tools.js (2640 lines, build-graph, check-cycles, find-orphans, verify level4, in-house DFS cycle detection)
+Last activity: 2026-03-02 — Completed plan 04-04: arch-integrator agent spec (558 lines) and write-digest command in arch-tools.js (3008 lines, 50-line DIGEST.md limit)
 
-Progress: [█████████████░] 72%
+Progress: [██████████████░] 78%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: 3.4 min
-- Total execution time: ~0.14 hours
+- Total execution time: ~0.15 hours
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [█████████████░] 72%
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | 16 min | 4 min |
 | 2. Intake and Intent Extraction | 2/2 | 5 min | 2.5 min |
 | 3. Core Design Pipeline | 6/6 | ~40 min | ~6.7 min |
-| 4. Verification, Integration, and Quality Gates | 3/5 | 20 min | 6.7 min (running) |
+| 4. Verification, Integration, and Quality Gates | 4/5 | 24 min | 6 min (running) |
 
 **Recent Trend:**
-- Last 5 plans: ~4.5 min
+- Last 5 plans: ~4.4 min
 - Trend: -
 
 *Updated after each plan completion*
@@ -107,6 +107,11 @@ Recent decisions affecting current work:
 - [04-03]: verify run Level 4 runs once per design directory (not per-file like Levels 1-3) — Level 4 is inherently a cross-file check
 - [04-03]: events.yaml missing is graceful degradation (not error) for check-cycles/find-orphans; hard error only for build-graph — informational commands degrade gracefully
 - [04-03]: Graph built once and passed to all sub-checks in verifyLevel4 — avoids redundant file I/O, single consistent graph per run
+- [04-04]: arch-integrator uses haiku model — cross-phase checks are structural pattern matching (name resolution), not semantic reasoning; speed over depth
+- [04-04]: VERIFICATION.md read via frontmatter get --field status only (not full body) — arch-integrator needs status string only; loading full body wastes haiku context on findings it doesn't process
+- [04-04]: Digest-first orientation (Step 2) is STAT-04 implementation — all digests capped at 50 lines each; even 4 phases = 200 lines max before any full artifact fetch
+- [04-04]: Circular dependency check returns human_needed (not gaps_found) — cycle may be intentional bounded revision loop; requires human architectural confirmation
+- [04-04]: write-digest fallback reads .planning/STATE.md when .arch/STATE.md absent — supports both GSD (.planning/) and arch (.arch/) directory layouts
 
 ### Pending Todos
 
@@ -120,5 +125,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Completed 04-03-PLAN.md — Level 4 YAML graph traversal in arch-tools.js (2640 lines, build-graph, check-cycles, find-orphans, verify level4). Phase 4 plan 3/5 complete.
-Resume with: /arch-gsd:execute-phase 4 plan 04 (after /clear for fresh context)
+Stopped at: Completed 04-04-PLAN.md — arch-integrator agent spec (558 lines, all 7 XML sections) and write-digest command in arch-tools.js (3008 lines). Phase 4 plan 4/5 complete.
+Resume with: /arch-gsd:execute-phase 4 plan 05 (after /clear for fresh context)
