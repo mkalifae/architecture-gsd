@@ -59,20 +59,20 @@ level: 1, finding: "file_not_found", path: "{expected_path}" }`.
 Check implementation: `wc -l {file}` — compare to threshold.
 
 **2b. All required sections present:**
-- Agent specs: 7 sections (`## Role`, `## Upstream Input`, `## Downstream Consumer`,
-  `## Execution Flow`, `## Structured Returns`, `## Failure Modes`, `## Constraints`)
+- Agent specs: 7 XML sections (`<role>`, `<upstream_input>`, `<downstream_consumer>`,
+  `<execution_flow>`, `<structured_returns>`, `<failure_modes>`, `<constraints>`)
 - Failure modes: 3 sections (`## Failure Mode Catalog`, `## Integration Point Failures`,
   `## Residual Risks`)
 - Event schemas: 5 top-level keys (`name`, `type`, `version`, `payload`, `error_cases`)
 
-Check implementation: Scan for section headers with regex `^## Section Name` (markdown)
-or key presence check (YAML).
+Check implementation: Scan for XML opening tags with regex `<tag_name>` (agent specs)
+or section headers with regex `^## Section Name` (failure modes) or key presence check (YAML).
 
 **2c. No stub phrases detected:**
 Run `node bin/arch-tools.js detect-stubs {file}` — must return `"clean": true`.
-Stub patterns detected: TBD, to be determined, handles gracefully, as needed,
-will be added later, placeholder, coming soon, TODO, FIXME, details to follow,
-specify later. See `bin/arch-tools.js` STUB_PATTERNS constant for full list.
+Banned phrases are those signaling incomplete or deferred content: three-letter acronyms
+meaning "not yet written", vague completion claims without specifics, or explicit deferral
+markers. See `bin/arch-tools.js` STUB_PATTERNS constant for the authoritative list.
 
 **2d. Frontmatter has all required fields:**
 - Agent specs: `name`, `description`, `tools`, `model`, `color` (5 fields)
@@ -227,7 +227,7 @@ The arch-verifier returns a single JSON object summarizing all checks across all
 
 ```json
 {
-  "status": "passed | gaps_found",
+  "status": "passed | gaps_found | human_needed | failed",
   "phase": "{phase-name}",
   "timestamp": "ISO-8601 timestamp",
   "levels_run": [1, 2, 3, 4],
@@ -243,7 +243,7 @@ The arch-verifier returns a single JSON object summarizing all checks across all
       "check": "required_sections",
       "result": "fail",
       "file": "agents/arch-executor.md",
-      "detail": "Missing section: ## Structured Returns"
+      "detail": "Missing section: <structured_returns>"
     }
   ],
   "recommended_action": "Fix 3 Level 2 gaps in agents/ before running Level 3"
@@ -252,7 +252,9 @@ The arch-verifier returns a single JSON object summarizing all checks across all
 
 **Status rules:**
 - `passed`: All levels run, all checks passed (zero findings with result=fail)
-- `gaps_found`: One or more findings with result=fail
+- `gaps_found`: One or more findings with result=fail, all automatically diagnosable
+- `human_needed`: Findings that require human judgment to resolve (ambiguous references, design intent questions)
+- `failed`: Verification could not complete (missing prerequisites, file system errors, unrecoverable state)
 
 ---
 
