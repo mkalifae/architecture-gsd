@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 
 ## Current Position
 
-Phase: 3 of 5 (Core Design Pipeline) — COMPLETE
-Plan: All 6 plans complete
-Status: Phase 3 Complete
-Last activity: 2026-02-28 — Completed plan 03-06: execute-phase full pipeline orchestrator (399 lines, 10 steps, bounded revision loop, wave-parallel execution, context discipline)
+Phase: 4 of 5 (Verification, Integration, and Quality Gates) — IN PROGRESS
+Plan: 1 of 5 complete
+Status: Phase 4 Active
+Last activity: 2026-03-02 — Completed plan 04-01: arch-verifier complete spec (618 lines, 7 XML sections, 9-step execution pipeline, adversarial OUTPUT framing, 4 structured returns, 4 failure modes)
 
-Progress: [██████████░░] 60%
+Progress: [███████████░] 65%
 
 ## Performance Metrics
 
@@ -30,9 +30,10 @@ Progress: [██████████░░] 60%
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | 16 min | 4 min |
 | 2. Intake and Intent Extraction | 2/2 | 5 min | 2.5 min |
 | 3. Core Design Pipeline | 6/6 | ~40 min | ~6.7 min |
+| 4. Verification, Integration, and Quality Gates | 1/5 | 5 min | 5 min (running) |
 
 **Recent Trend:**
-- Last 5 plans: 4 min
+- Last 5 plans: ~4.5 min
 - Trend: -
 
 *Updated after each plan completion*
@@ -93,6 +94,10 @@ Recent decisions affecting current work:
 - [03-06]: context-engineer, schema-designer, and failure-analyst are reference specs passed to arch-executor, NOT directly spawned by the orchestrator — keeps orchestrator lean
 - [03-06]: Bounded revision loop escalation hard-stops on iteration 3 with structured gap report — never silently proceeds to execution
 - [03-06]: Wave execution groups by frontmatter wave field; all same-wave plans spawned simultaneously; next wave waits for current wave completion
+- [04-01]: arch-verifier checks OUTPUTS (design documents after execution); arch-checker checks PLANS (before execution) — adversarial frames must NEVER overlap; these are separate failure domains
+- [04-01]: FAILURE-04 (events.yaml missing) allows partial Level 4 run — agent-name resolution and filename checks continue without events.yaml; event resolution checks skip with explicit notation
+- [04-01]: scan-antipatterns results incorporated into VERIFICATION.md findings array (not separate) — single artifact for all verification output
+- [04-01]: detect-stubs false positive (FAILURE-03) requires context inspection of flagged line before recording as fail — meta-descriptive content describing stub phrases is not itself a stub
 
 ### Pending Todos
 
@@ -105,6 +110,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28
-Stopped at: Completed 03-06-PLAN.md — execute-phase full pipeline orchestrator (399 lines, 10 steps). Phase 3 (Core Design Pipeline) is now complete — all 6 plans executed. Ready for Phase 4.
-Resume with: /arch-gsd:execute-phase 4 (after /clear for fresh context)
+Last session: 2026-03-02
+Stopped at: Completed 04-01-PLAN.md — arch-verifier complete spec (618 lines, all 7 XML sections, adversarial OUTPUT framing). Phase 4 plan 1/5 complete.
+Resume with: /arch-gsd:execute-phase 4 plan 02 (after /clear for fresh context)
