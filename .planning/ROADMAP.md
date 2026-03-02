@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation, Tooling, and Agent Scaffold** - Establish the plugin structure, arch-tools.js utility, CONTEXT.md schema, canonical naming conventions, design document templates, and model profiles that every subsequent phase depends on
 - [ ] **Phase 2: Intake and Intent Extraction** - Build the discuss-system agent and /arch-gsd:new-system workflow so a human can describe a system in natural language and receive a structured, non-prose CONTEXT.md with explicit fields and mandatory non-goals
 - [ ] **Phase 3: Core Design Pipeline** - Implement the researcher → roadmapper → planner → checker → executor chain plus all three specialized agents (context-engineer, schema-designer, failure-analyst), the /arch-gsd:execute-phase workflow, wave-based parallelization, and all primary output documents
-- [ ] **Phase 4: Verification, Integration, and Quality Gates** - Complete arch-verifier and arch-integrator, the full arch-tools.js verification engine with YAML graph traversal, all four verification levels, phase-boundary digests, INTEGRATION-REPORT.md, and MANIFEST.md
+- [x] **Phase 4: Verification, Integration, and Quality Gates** - Complete arch-verifier and arch-integrator, the full arch-tools.js verification engine with YAML graph traversal, all four verification levels, phase-boundary digests, INTEGRATION-REPORT.md, and MANIFEST.md
 - [ ] **Phase 5: Self-Design Validation and CLI Polish** - Run Architecture GSD against itself to validate the complete pipeline end-to-end, confirm the output is sufficient for re-implementation from scratch, establish self-design convergence criteria, and add the /arch-gsd:resume and /arch-gsd:progress workflows
 
 ## Phase Details
@@ -113,11 +113,11 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — arch-verifier agent spec: adversarial output verification (distinct from arch-checker plan review), 9-step execution flow calling arch-tools.js verify commands, VERIFICATION.md production
-- [ ] 04-02-PLAN.md — arch-tools.js Level 1-3 verification engine: verify level1/2/3 commands, scan-antipatterns with structured 6-field findings, js-yaml lazy loading, verify run multi-level runner
-- [ ] 04-03-PLAN.md — Level 4 YAML graph traversal: build-graph adjacency construction, in-house DFS cycle detection, find-orphans, verify level4 with 5 consistency checks
-- [ ] 04-04-PLAN.md — arch-integrator agent spec (digest-first context discipline, cross-phase consistency checks, INTEGRATION-REPORT.md) and write-digest command (50-line DIGEST.md enforcement)
-- [ ] 04-05-PLAN.md — /arch-gsd:verify-phase workflow: 9-step orchestrator spawning arch-verifier then arch-integrator, MANIFEST.md generation, DIGEST.md as final step
+- [x] 04-01-PLAN.md — arch-verifier agent spec: adversarial output verification (distinct from arch-checker plan review), 9-step execution flow calling arch-tools.js verify commands, VERIFICATION.md production
+- [x] 04-02-PLAN.md — arch-tools.js Level 1-3 verification engine: verify level1/2/3 commands, scan-antipatterns with structured 6-field findings, js-yaml lazy loading, verify run multi-level runner
+- [x] 04-03-PLAN.md — Level 4 YAML graph traversal: build-graph adjacency construction, in-house DFS cycle detection, find-orphans, verify level4 with 5 consistency checks
+- [x] 04-04-PLAN.md — arch-integrator agent spec (digest-first context discipline, cross-phase consistency checks, INTEGRATION-REPORT.md) and write-digest command (50-line DIGEST.md enforcement)
+- [x] 04-05-PLAN.md — /arch-gsd:verify-phase workflow: 9-step orchestrator spawning arch-verifier then arch-integrator, MANIFEST.md generation, DIGEST.md as final step
 
 ---
 
@@ -155,7 +155,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | ✓ Complete | 2026-02-27 |
 | 2. Intake and Intent Extraction | 2/2 | ✓ Complete | 2026-02-28 |
 | 3. Core Design Pipeline | 6/6 | ✓ Complete | 2026-03-02 |
-| 4. Verification, Integration, and Quality Gates | 0/5 | Not started | - |
+| 4. Verification, Integration, and Quality Gates | 5/5 | ✓ Complete | 2026-03-02 |
 | 5. Self-Design Validation and CLI Polish | 0/3 | Not started | - |
 
 ---
