@@ -1,0 +1,295 @@
+# Event Registry: Code Review Automation Pipeline
+# All 6 events that flow between the 6 agents
+# Naming: PascalCase events, kebab-case agent names
+# See: references/naming-conventions.md, templates/event-schema.yaml
+
+---
+events:
+
+  - name: PullRequestReceived
+    type: event
+    version: "1.0"
+    description: Emitted by trigger-listener when a GitHub webhook PR event passes HMAC-SHA256 signature validation and is identified as a PR open, reopen, or synchronize action.
+    payload:
+      - name: pr_number
+        type: integer
+        constraints: "[min: 1]"
+        example: 4271
+        required: true
+      - name: repository_full_name
+        type: string
+        constraints: "[max_length: 255, pattern: org-or-user/repo-name]"
+        example: "acme-corp/backend-api"
+        required: true
+      - name: head_sha
+        type: string
+        constraints: "[length: 40, pattern: hex-string]"
+        example: "a3f8c2d1e4b5f6a7b8c9d0e1f2a3b4c5d6e7f8a9"
+        required: true
+      - name: delivery_id
+        type: string
+        constraints: "[max_length: 64, pattern: uuid-v4]"
+        example: "550e8400-e29b-41d4-a716-446655440000"
+        required: true
+      - name: pr_url
+        type: string
+        constraints: "[max_length: 512, pattern: https://github.com/*/*/pull/*]"
+        example: "https://github.com/acme-corp/backend-api/pull/4271"
+        required: true
+      - name: action
+        type: "enum[opened, reopened, synchronize]"
+        constraints: "[must be one of the three listed values]"
+        example: "opened"
+        required: true
+    producers:
+      - trigger-listener
+    consumers:
+      - diff-analyzer
+    error_cases:
+      - condition: delivery_id has already been processed (duplicate webhook delivery from GitHub retry)
+        payload_field: delivery_id
+        recovery: diff-analyzer reads delivery_id, checks idempotency store, and returns { status 'duplicate_skipped', reason 'already_processed' } without re-processing the PR
+      - condition: head_sha references a commit that no longer exists on the branch (force-pushed between webhook delivery and diff fetch)
+        payload_field: head_sha
+        recovery: diff-analyzer returns { status 'failed', reason 'commit_not_found' } and trigger-listener logs the stale reference for monitoring alert
+
+  - name: DiffAnalysisComplete
+    type: event
+    version: "1.0"
+    description: Emitted by diff-analyzer after fetching the PR diff via GitHub API and parsing it into file-attributed chunks ready for parallel style and logic analysis.
+    payload:
+      - name: pr_number
+        type: integer
+        constraints: "[min: 1]"
+        example: 4271
+        required: true
+      - name: head_sha
+        type: string
+        constraints: "[length: 40, pattern: hex-string]"
+        example: "a3f8c2d1e4b5f6a7b8c9d0e1f2a3b4c5d6e7f8a9"
+        required: true
+      - name: diff_chunks
+        type: "array<object{file: string, start_line: integer, end_line: integer, content: string, chunk_index: integer}>"
+        constraints: "[min_items: 1, max_items: 100, each.file: max_length 512, each.content: max_length 25000]"
+        example: '[{"file": "src/api/auth.ts", "start_line": 1, "end_line": 48, "content": "@@ -1,10 +1,48 @@...", "chunk_index": 0}]'
+        required: true
+      - name: total_lines_changed
+        type: integer
+        constraints: "[min: 1, max: 2000]"
+        example: 347
+        required: true
+      - name: chunked
+        type: boolean
+        constraints: "[true if total_lines_changed > 500]"
+        example: false
+        required: true
+      - name: files_changed
+        type: "array<string>"
+        constraints: "[min_items: 1, max_items: 200, each: max_length 512]"
+        example: '["src/api/auth.ts", "src/utils/validation.ts"]'
+        required: true
+    producers:
+      - diff-analyzer
+    consumers:
+      - style-checker
+      - logic-reviewer
+    error_cases:
+      - condition: GitHub API returns 404 for the PR diff (PR was closed or deleted after PullRequestReceived was emitted)
+        payload_field: pr_number
+        recovery: diff-analyzer returns { status 'failed', reason 'pr_not_found' } and notifies trigger-listener to discard the correlated PullRequestReceived event
+      - condition: diff total_lines_changed exceeds 2000 (beyond the maximum supported PR size)
+        payload_field: total_lines_changed
+        recovery: diff-analyzer sets chunked to true, applies 500-line chunking, logs a warning that analysis will be partial for oversized PRs, and continues processing available chunks
+
+  - name: StyleCheckComplete
+    type: event
+    version: "1.0"
+    description: Emitted by style-checker after running static analysis linting tools against all diff chunks and producing a consolidated findings list attributed to file and line.
+    payload:
+      - name: pr_number
+        type: integer
+        constraints: "[min: 1]"
+        example: 4271
+        required: true
+      - name: head_sha
+        type: string
+        constraints: "[length: 40, pattern: hex-string]"
+        example: "a3f8c2d1e4b5f6a7b8c9d0e1f2a3b4c5d6e7f8a9"
+        required: true
+      - name: findings
+        type: "array<object{file: string, line: integer, rule: string, severity: string, message: string}>"
+        constraints: "[min_items: 0, each.file: max_length 512, each.rule: max_length 128, each.message: max_length 512]"
+        example: '[{"file": "src/api/auth.ts", "line": 23, "rule": "no-unused-vars", "severity": "warning", "message": "\'token\' is assigned but never used"}]'
+        required: true
+      - name: tool_name
+        type: string
+        constraints: "[max_length: 64, one of: eslint, pylint, rubocop, checkstyle, golint]"
+        example: "eslint"
+        required: true
+      - name: status
+        type: "enum[passed, violations_found]"
+        constraints: "[passed if findings array is empty, violations_found if findings.length > 0]"
+        example: "violations_found"
+        required: true
+      - name: duration_ms
+        type: integer
+        constraints: "[min: 0, max: 30000]"
+        example: 847
+        required: true
+    producers:
+      - style-checker
+    consumers:
+      - synthesis-agent
+    error_cases:
+      - condition: style-checker cannot determine the repository language (no config file found, ambiguous file types)
+        payload_field: tool_name
+        recovery: style-checker returns status 'passed' with an empty findings array and logs a warning that language detection failed; synthesis-agent treats missing style analysis as a passed check
+      - condition: linting tool exits with a configuration error (malformed .eslintrc, missing Pylint plugin)
+        payload_field: status
+        recovery: style-checker returns { status 'failed', reason 'tool_config_error', tool_name } without publishing StyleCheckComplete; dead-letter queue captures the failed event for operator inspection
+
+  - name: LogicReviewComplete
+    type: event
+    version: "1.0"
+    description: Emitted by logic-reviewer after sending PR diff chunks to the LLM for semantic analysis and receiving a structured findings response with file and line attribution.
+    payload:
+      - name: pr_number
+        type: integer
+        constraints: "[min: 1]"
+        example: 4271
+        required: true
+      - name: head_sha
+        type: string
+        constraints: "[length: 40, pattern: hex-string]"
+        example: "a3f8c2d1e4b5f6a7b8c9d0e1f2a3b4c5d6e7f8a9"
+        required: true
+      - name: findings
+        type: "array<object{file: string, line_start: integer, line_end: integer, severity: string, category: string, description: string}>"
+        constraints: "[min_items: 0, each.file: max_length 512, each.description: max_length 1024, each.category: one of logic_error|design_pattern|security|performance|other]"
+        example: '[{"file": "src/api/auth.ts", "line_start": 18, "line_end": 31, "severity": "high", "category": "security", "description": "JWT token is validated but expiry check uses local time without timezone normalization — could accept expired tokens in UTC+N environments"}]'
+        required: true
+      - name: status
+        type: "enum[complete, timeout, partial]"
+        constraints: "[complete if all chunks analyzed within 60s; timeout if LLM did not respond within budget; partial if some chunks analyzed and others skipped]"
+        example: "complete"
+        required: true
+      - name: model_used
+        type: string
+        constraints: "[max_length: 128, must be a valid Anthropic model identifier]"
+        example: "claude-3-5-sonnet-20241022"
+        required: true
+      - name: prompt_version
+        type: string
+        constraints: "[max_length: 32, pattern: semver v1.0.0 or v1.0.0-model-slug]"
+        example: "v1.2.0-sonnet"
+        required: true
+      - name: duration_ms
+        type: integer
+        constraints: "[min: 0, max: 60000]"
+        example: 34521
+        required: true
+    producers:
+      - logic-reviewer
+    consumers:
+      - synthesis-agent
+    error_cases:
+      - condition: LLM API does not respond within 60 seconds (timeout)
+        payload_field: status
+        recovery: logic-reviewer sets status to 'timeout', sets findings to empty array, and emits LogicReviewComplete so synthesis-agent can proceed with available findings rather than waiting indefinitely
+      - condition: LLM returns findings without file or line attribution (unlocated findings)
+        payload_field: findings
+        recovery: logic-reviewer's schema validator rejects findings missing file field, logs the violation with the full LLM response for debugging, and retries once with an explicit attribution requirement added to the prompt; if retry also lacks attribution, discards unlocated findings and emits LogicReviewComplete with the valid attributed subset
+
+  - name: ReviewSynthesized
+    type: event
+    version: "1.0"
+    description: Emitted by synthesis-agent after aggregating StyleCheckComplete and LogicReviewComplete findings for the same PR, applying severity-ranked conflict resolution, and producing a unified review ready for posting.
+    payload:
+      - name: pr_number
+        type: integer
+        constraints: "[min: 1]"
+        example: 4271
+        required: true
+      - name: head_sha
+        type: string
+        constraints: "[length: 40, pattern: hex-string]"
+        example: "a3f8c2d1e4b5f6a7b8c9d0e1f2a3b4c5d6e7f8a9"
+        required: true
+      - name: unified_findings
+        type: "array<object{file: string, line: integer, severity: string, source: string, message: string}>"
+        constraints: "[min_items: 0, sorted by severity descending (critical first), each.source: one of style|logic, each.severity: one of critical|high|medium|low, each.file: max_length 512]"
+        example: '[{"file": "src/api/auth.ts", "line": 23, "severity": "high", "source": "logic", "message": "JWT expiry check may accept expired tokens in non-UTC environments"}]'
+        required: true
+      - name: verdict
+        type: "enum[approved, changes_requested, comment]"
+        constraints: "[changes_requested if any finding has severity critical or high; approved if no findings; comment if only medium or low severity findings]"
+        example: "changes_requested"
+        required: true
+      - name: style_status
+        type: "enum[passed, violations_found, skipped]"
+        constraints: "[reflects StyleCheckComplete status; skipped if StyleCheckComplete was not received within aggregation timeout]"
+        example: "violations_found"
+        required: true
+      - name: logic_status
+        type: "enum[complete, timeout, partial, skipped]"
+        constraints: "[reflects LogicReviewComplete status; skipped if LogicReviewComplete was not received within aggregation timeout]"
+        example: "complete"
+        required: true
+    producers:
+      - synthesis-agent
+    consumers:
+      - notification-agent
+    error_cases:
+      - condition: synthesis-agent receives StyleCheckComplete but LogicReviewComplete does not arrive within 90-second aggregation timeout
+        payload_field: logic_status
+        recovery: synthesis-agent sets logic_status to 'skipped', uses available style findings only, sets verdict based on style findings severity, and emits ReviewSynthesized with a note in the summary that logic review was unavailable
+      - condition: both StyleCheckComplete and LogicReviewComplete have status indicating failure (tool config error + LLM timeout simultaneously)
+        payload_field: verdict
+        recovery: synthesis-agent emits ReviewSynthesized with empty unified_findings, verdict 'comment', and a human-readable summary noting that automated analysis failed; notification-agent posts this as a PR comment informing the developer to request manual review
+
+  - name: NotificationSent
+    type: event
+    version: "1.0"
+    description: Emitted by notification-agent after posting all review comments to the GitHub PR as an inline review submission and optionally sending a summary notification to the tech lead.
+    payload:
+      - name: pr_number
+        type: integer
+        constraints: "[min: 1]"
+        example: 4271
+        required: true
+      - name: head_sha
+        type: string
+        constraints: "[length: 40, pattern: hex-string]"
+        example: "a3f8c2d1e4b5f6a7b8c9d0e1f2a3b4c5d6e7f8a9"
+        required: true
+      - name: comments_posted
+        type: integer
+        constraints: "[min: 0]"
+        example: 5
+        required: true
+      - name: review_id
+        type: string
+        constraints: "[max_length: 64, GitHub review ID format]"
+        example: "1847293041"
+        required: true
+      - name: status
+        type: "enum[complete, partial, failed]"
+        constraints: "[complete if all comments posted; partial if some comments failed to post due to GitHub API errors; failed if the review submission itself failed]"
+        example: "complete"
+        required: true
+      - name: verdict_posted
+        type: "enum[approved, changes_requested, comment]"
+        constraints: "[matches ReviewSynthesized verdict that was posted to GitHub]"
+        example: "changes_requested"
+        required: true
+    producers:
+      - notification-agent
+    consumers:
+      - monitoring
+    error_cases:
+      - condition: GitHub API returns 422 for a comment (line number no longer exists in the diff — PR was updated after ReviewSynthesized was emitted)
+        payload_field: comments_posted
+        recovery: notification-agent skips the stale inline comment, posts the finding as a top-level PR comment instead with a note that the line reference is outdated, increments comments_posted, and continues posting remaining comments
+      - condition: GitHub API returns 403 (insufficient permissions to post review — token missing write:pull_requests scope)
+        payload_field: status
+        recovery: notification-agent sets status to 'failed', logs the permission error with the token scope and repository name, and emits NotificationSent with status 'failed' so the dead-letter queue captures it for operator remediation
