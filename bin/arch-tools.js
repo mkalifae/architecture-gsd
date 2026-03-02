@@ -486,6 +486,17 @@ ANTI-PATTERN SCANNER
   scan-antipatterns --dir <dir>
       Scan all .md and .yaml files in directory.
 
+DIGEST GENERATION
+  write-digest --phase N --design-dir <dir>
+      Generate a phase-boundary DIGEST.md file for phase N.
+      Scans design/ for artifact count, extracts agent names/models/descriptions
+      from agents/, reads events.yaml for event registry, pulls recent decisions
+      from .arch/STATE.md or .planning/STATE.md.
+      Enforces a hard 50-line limit (STAT-04): trims cross-phase refs first,
+      then event details, then agent details to stay within budget.
+      Writes to design/digests/phase-NN-DIGEST.md (creates directory if needed).
+      Returns: { written, path, lines, phase, agents_found, events_found, artifacts_counted }
+
 OPTIONS
   --help    Show this help text
 `);
@@ -2554,6 +2565,359 @@ function cmdScanAntiPatterns(args) {
   }
 }
 
+// ─── Command: write-digest ───────────────────────────────────────────────────
+
+/**
+ * Generate a phase-boundary DIGEST.md file capped at 50 lines (STAT-04).
+ * Scans design/ directory and agents/ for entities, reads events.yaml for events,
+ * extracts decisions from .arch/STATE.md.
+ *
+ * Usage: write-digest --phase N --design-dir <dir>
+ */
+function cmdWriteDigest(args) {
+  const phaseIdx = args.indexOf('--phase');
+  const designDirIdx = args.indexOf('--design-dir');
+
+  if (phaseIdx === -1) error('write-digest requires --phase N');
+  if (designDirIdx === -1) error('write-digest requires --design-dir <dir>');
+
+  const phaseArg = args[phaseIdx + 1];
+  const designDir = args[designDirIdx + 1];
+
+  if (!phaseArg) error('--phase requires a phase number');
+  if (!designDir) error('--design-dir requires a directory path');
+
+  const phaseNum = parseInt(phaseArg, 10);
+  if (isNaN(phaseNum)) error(`--phase must be a number, got: ${phaseArg}`);
+
+  const phasePadded = padPhase(phaseNum);
+  const timestamp = new Date().toISOString();
+
+  // --- Step 1: Count artifacts in design directory ---
+  let artifactCount = 0;
+  const designPath = path.resolve(designDir);
+
+  // Helper: collect all .md and .yaml files recursively in a directory
+  function collectDocFiles(dir) {
+    const results = [];
+    if (!fs.existsSync(dir)) return results;
+    function recurse(d) {
+      let entries;
+      try { entries = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+      for (const entry of entries) {
+        const fullPath = path.join(d, entry.name);
+        if (entry.isDirectory() && !entry.name.startsWith('.')) {
+          recurse(fullPath);
+        } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.yaml') || entry.name.endsWith('.yml'))) {
+          results.push(fullPath);
+        }
+      }
+    }
+    recurse(dir);
+    return results;
+  }
+
+  const designFiles = collectDocFiles(path.join(designPath, 'design'));
+  artifactCount = designFiles.length;
+
+  // --- Step 2: Extract agent names and descriptions ---
+  const agentEntries = [];
+  const agentsDir = path.join(designPath, 'agents');
+  if (fs.existsSync(agentsDir)) {
+    const agentFiles = findMarkdownFiles(agentsDir);
+    for (const af of agentFiles) {
+      const content = safeReadFile(af);
+      if (!content) continue;
+      const fm = extractFrontmatter(content);
+      if (fm.name) {
+        agentEntries.push({
+          name: fm.name,
+          model: fm.model || 'unknown',
+          description: fm.description || '',
+        });
+      }
+    }
+  }
+
+  // --- Step 3: Extract event names from events.yaml ---
+  const eventEntries = [];
+  const eventsYamlPath = path.join(designPath, 'design', 'events', 'events.yaml');
+  if (fs.existsSync(eventsYamlPath)) {
+    try {
+      const yaml = requireYaml();
+      const eventsContent = safeReadFile(eventsYamlPath);
+      if (eventsContent) {
+        const eventsData = yaml.load(eventsContent);
+        if (eventsData && typeof eventsData === 'object') {
+          if (Array.isArray(eventsData)) {
+            for (const ev of eventsData) {
+              if (ev && ev.name) {
+                const producers = ev.producers || ev.produced_by || [];
+                const consumers = ev.consumers || ev.consumed_by || [];
+                eventEntries.push({
+                  name: ev.name,
+                  producers: Array.isArray(producers) ? producers : [producers],
+                  consumers: Array.isArray(consumers) ? consumers : [consumers],
+                });
+              }
+            }
+          } else {
+            for (const [key, val] of Object.entries(eventsData)) {
+              if (typeof val === 'object' && val !== null) {
+                const producers = val.producers || val.produced_by || [];
+                const consumers = val.consumers || val.consumed_by || [];
+                eventEntries.push({
+                  name: val.name || key,
+                  producers: Array.isArray(producers) ? producers : (producers ? [producers] : []),
+                  consumers: Array.isArray(consumers) ? consumers : (consumers ? [consumers] : []),
+                });
+              } else if (typeof key === 'string' && key.match(/^[A-Z]/)) {
+                eventEntries.push({ name: key, producers: [], consumers: [] });
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // events.yaml parse failure — skip event entries, not a fatal error
+    }
+  }
+
+  // --- Step 4: Extract recent decisions from .arch/STATE.md ---
+  const decisions = [];
+  const archStateDir = path.join(designPath, '.arch');
+  const archStatePath = path.join(archStateDir, 'STATE.md');
+
+  if (fs.existsSync(archStatePath)) {
+    const stateContent = safeReadFile(archStatePath);
+    if (stateContent) {
+      // Extract lines from Decisions section in STATE.md
+      const decisionSection = stateContent.match(/## (?:Decisions|Key Decisions|Accumulated Context)([\s\S]*?)(?=\n## |\n---|\Z|$)/i);
+      if (decisionSection) {
+        const decLines = decisionSection[1].split('\n');
+        for (const line of decLines) {
+          const m = line.match(/^[-*]\s+\[([^\]]+)\]:\s+(.+)/);
+          if (m) {
+            decisions.push(m[2].trim().slice(0, 80)); // Trim to 80 chars to stay within line budget
+          } else {
+            const plain = line.match(/^[-*]\s+(.+)/);
+            if (plain && plain[1].trim().length > 10) {
+              decisions.push(plain[1].trim().slice(0, 80));
+            }
+          }
+          if (decisions.length >= 5) break; // Cap at 5 decisions to control line count
+        }
+      }
+    }
+  }
+
+  // Fallback: check .planning/STATE.md if .arch/STATE.md not found
+  if (decisions.length === 0) {
+    const planningStatePath = path.join(designPath, '.planning', 'STATE.md');
+    if (fs.existsSync(planningStatePath)) {
+      const stateContent = safeReadFile(planningStatePath);
+      if (stateContent) {
+        const decisionSection = stateContent.match(/### Decisions([\s\S]*?)(?=\n### |\n## |\n---|\Z|$)/i);
+        if (decisionSection) {
+          const decLines = decisionSection[1].split('\n');
+          for (const line of decLines) {
+            const plain = line.match(/^[-*]\s+(.+)/);
+            if (plain && plain[1].trim().length > 10) {
+              decisions.push(plain[1].trim().slice(0, 80));
+            }
+            if (decisions.length >= 5) break;
+          }
+        }
+      }
+    }
+  }
+
+  // --- Step 5: Build cross-phase references (check which artifacts reference other phases) ---
+  const crossPhaseRefs = [];
+  const phasePattern = /[Pp]hase[\s_-]?(\d+)/g;
+
+  // Sample up to 5 agent files looking for phase references
+  const sampled = agentEntries.slice(0, 5);
+  for (const agent of sampled) {
+    const agentPath = path.join(agentsDir, `${agent.name}.md`);
+    const content = safeReadFile(agentPath);
+    if (!content) continue;
+    const body = stripFrontmatter(content);
+    const matches = body.matchAll(/[Pp]hase[\s_-]?(\d+)/g);
+    const referencedPhases = new Set();
+    for (const m of matches) {
+      const refPhase = parseInt(m[1], 10);
+      if (refPhase !== phaseNum) referencedPhases.add(refPhase);
+    }
+    for (const refPhase of referencedPhases) {
+      crossPhaseRefs.push(`Phase ${phasePadded} -> Phase ${padPhase(refPhase)}: ${agent.name} references Phase ${refPhase} entities`);
+      if (crossPhaseRefs.length >= 3) break;
+    }
+    if (crossPhaseRefs.length >= 3) break;
+  }
+
+  // --- Step 6: Build digest content ---
+  // Try to extract phase name from design directory structure
+  let phaseName = `Phase ${phaseNum}`;
+  // Check .arch/STATE.md for a phase name
+  if (fs.existsSync(archStatePath)) {
+    const sc = safeReadFile(archStatePath);
+    if (sc) {
+      const phaseMatch = sc.match(/Phase\s+\d+[:\s]+([^\n]{3,50})/);
+      if (phaseMatch) phaseName = phaseMatch[1].trim().replace(/^[-—]?\s*/, '');
+    }
+  }
+
+  const lines = [];
+
+  // Header (3 lines)
+  lines.push(`# Phase ${phasePadded} Digest — ${phaseName}`);
+  lines.push('');
+  lines.push(`**Completed:** ${timestamp}`);
+  lines.push(`**Artifacts produced:** ${artifactCount}`);
+  lines.push('');
+
+  // Decisions (up to 7 lines: header + 5 items + blank)
+  lines.push('## Decisions Made');
+  lines.push('');
+  if (decisions.length > 0) {
+    for (const d of decisions.slice(0, 5)) {
+      lines.push(`- ${d}`);
+    }
+  } else {
+    lines.push('- No decisions recorded in STATE.md for this phase');
+  }
+  lines.push('');
+
+  // Agents (variable: header + entries + blank)
+  lines.push('## Key Entities');
+  lines.push('');
+  lines.push('### Agents Defined');
+  if (agentEntries.length > 0) {
+    for (const agent of agentEntries) {
+      const desc = agent.description.slice(0, 60);
+      lines.push(`- ${agent.name} (${agent.model}) — ${desc}`);
+    }
+  } else {
+    lines.push('- None found in agents/');
+  }
+  lines.push('');
+
+  // Events (variable: header + entries + blank)
+  lines.push('### Events Registered');
+  if (eventEntries.length > 0) {
+    for (const ev of eventEntries) {
+      const prod = ev.producers.slice(0, 2).join(', ') || 'none';
+      const cons = ev.consumers.slice(0, 2).join(', ') || 'none';
+      lines.push(`- ${ev.name}: producers=[${prod}], consumers=[${cons}]`);
+    }
+  } else {
+    lines.push('- None found in design/events/events.yaml');
+  }
+  lines.push('');
+
+  // Cross-phase refs (variable: header + entries)
+  lines.push('### Cross-Phase References');
+  if (crossPhaseRefs.length > 0) {
+    for (const ref of crossPhaseRefs) {
+      lines.push(`- ${ref}`);
+    }
+  } else {
+    lines.push('- No cross-phase references detected');
+  }
+
+  // --- Step 7: Enforce 50-line hard limit (STAT-04) ---
+  // Trim strategy: remove cross-phase references first, then trim event details,
+  // then trim agent details. Always preserve header, Decisions, and Agents sections.
+  let content = lines;
+  const MAX_LINES = 50;
+
+  if (content.length > MAX_LINES) {
+    // Strategy 1: Remove Cross-Phase References section entirely
+    const crossPhaseStart = content.findIndex(l => l === '### Cross-Phase References');
+    if (crossPhaseStart !== -1) {
+      content = content.slice(0, crossPhaseStart);
+      // Remove trailing blank line if present
+      while (content.length > 0 && content[content.length - 1] === '') {
+        content.pop();
+      }
+    }
+  }
+
+  if (content.length > MAX_LINES) {
+    // Strategy 2: Trim event entries to 2
+    const eventsStart = content.findIndex(l => l === '### Events Registered');
+    const agentsBlankAfter = content.findIndex((l, i) => i > eventsStart && l === '');
+    if (eventsStart !== -1) {
+      const eventsEnd = agentsBlankAfter !== -1 ? agentsBlankAfter : content.length;
+      const eventsHeader = [content[eventsStart]];
+      const eventsItems = content.slice(eventsStart + 1, eventsEnd).filter(l => l.startsWith('-')).slice(0, 2);
+      content = [
+        ...content.slice(0, eventsStart),
+        ...eventsHeader,
+        ...eventsItems,
+        '',
+        ...content.slice(eventsEnd + 1),
+      ];
+    }
+  }
+
+  if (content.length > MAX_LINES) {
+    // Strategy 3: Trim agent entries to 3
+    const agentsStart = content.findIndex(l => l === '### Agents Defined');
+    if (agentsStart !== -1) {
+      let agentsEnd = content.length;
+      for (let i = agentsStart + 1; i < content.length; i++) {
+        if (content[i].startsWith('###') || content[i].startsWith('##')) {
+          agentsEnd = i;
+          break;
+        }
+      }
+      const agentsHeader = [content[agentsStart]];
+      const agentItems = content.slice(agentsStart + 1, agentsEnd).filter(l => l.startsWith('-')).slice(0, 3);
+      content = [
+        ...content.slice(0, agentsStart),
+        ...agentsHeader,
+        ...agentItems,
+        '',
+        ...content.slice(agentsEnd),
+      ];
+    }
+  }
+
+  if (content.length > MAX_LINES) {
+    // Final fallback: hard truncate at 50, preserving a note
+    content = content.slice(0, MAX_LINES - 1);
+    content.push('- (truncated to 50-line limit)');
+  }
+
+  const digestContent = content.join('\n') + '\n';
+  const finalLineCount = content.length;
+
+  // --- Step 8: Write digest file ---
+  const digestDir = path.join(designPath, 'design', 'digests');
+  if (!fs.existsSync(digestDir)) {
+    fs.mkdirSync(digestDir, { recursive: true });
+  }
+
+  const digestFileName = `phase-${phasePadded}-DIGEST.md`;
+  const digestPath = path.join(digestDir, digestFileName);
+
+  if (!safeWriteFile(digestPath, digestContent)) {
+    error(`Cannot write digest file: ${digestPath}`, { path: digestPath });
+  }
+
+  output({
+    written: true,
+    path: `design/digests/${digestFileName}`,
+    lines: finalLineCount,
+    phase: phaseNum,
+    agents_found: agentEntries.length,
+    events_found: eventEntries.length,
+    artifacts_counted: artifactCount,
+  });
+}
+
 // ─── Main Dispatcher ──────────────────────────────────────────────────────────
 
 const argv = process.argv.slice(2);
@@ -2633,6 +2997,10 @@ switch (command) {
 
   case 'scan-antipatterns':
     cmdScanAntiPatterns(subArgs);
+    break;
+
+  case 'write-digest':
+    cmdWriteDigest(subArgs);
     break;
 
   default:
