@@ -3,14 +3,16 @@
 /**
  * arch-tools.js — CLI utility for Architecture GSD workflow operations
  *
- * Provides programmatic tooling for all Phase 1 command groups:
+ * Provides programmatic tooling for all Phase 1-4 command groups:
  * frontmatter CRUD, stub detection, phase state management,
- * CONTEXT.md validation, and naming convention validation.
+ * CONTEXT.md validation, naming convention validation,
+ * and multi-level verification engine (Levels 1-3) plus anti-pattern scanner.
  *
  * Usage: node bin/arch-tools.js <command> [args]
  *
  * All commands output JSON to stdout. Errors go to stderr. Exit 0 on success, 1 on error.
- * Zero npm dependencies — only Node.js built-ins (fs, path, child_process).
+ * Zero npm dependencies for Levels 1-2 — only Node.js built-ins (fs, path, child_process).
+ * js-yaml is lazy-loaded only for Level 3+ commands.
  *
  * Commands:
  *   frontmatter get <file> [--field key]          Extract frontmatter as JSON
@@ -27,6 +29,15 @@
  *   validate-context <file>                       Validate CONTEXT.md required fields
  *   validate-names <file>                         Scan file for naming convention violations
  *   validate-names --dir <directory>              Scan all files in directory
+ *
+ *   verify level1 <file>                          Check file exists (Level 1)
+ *   verify level2 <file> [--type agent|schema|failure|topology]
+ *                                                 Check substantive content (Level 2)
+ *   verify level3 <file> --design-dir <dir>       Check cross-references (Level 3)
+ *   verify run <file|dir> [--levels 1,2,3]        Multi-level verification runner
+ *
+ *   scan-antipatterns <file>                      Scan file for architecture anti-patterns
+ *   scan-antipatterns --dir <dir>                 Scan all files in directory
  *
  *   --help                                        Show this help text
  */
@@ -353,7 +364,8 @@ USAGE
   node bin/arch-tools.js <command> [options]
 
 All commands output JSON to stdout. Errors go to stderr.
-Exit code 0 on success, 1 on error. Zero npm dependencies.
+Exit code 0 on success, 1 on error.
+Zero npm dependencies for Levels 1-2. js-yaml lazy-loaded for Level 3+.
 
 FRONTMATTER CRUD
   frontmatter get <file> [--field key]
@@ -406,6 +418,43 @@ NAMING VALIDATION
 
   validate-names --dir <directory>
       Scan all files in directory.
+
+VERIFICATION ENGINE (Levels 1-3)
+  verify level1 <file>
+      Level 1: Check file exists on disk.
+      Returns: { status, level, file, findings }
+
+  verify level2 <file> [--type agent|schema|failure|topology]
+      Level 2: Check substantive content — line count, required sections
+      (XML tags for agents, headers for failure modes, YAML keys for schemas),
+      no stub phrases, and required frontmatter fields present.
+      Returns: { status, level, file, findings }
+
+  verify level3 <file> --design-dir <dir>
+      Level 3: Check cross-references — agents referenced in workflows,
+      events have producers and consumers, failure modes linked from agent specs.
+      Requires js-yaml for YAML event parsing.
+      Returns: { status, level, file, findings }
+
+  verify run <file|dir> [--levels 1,2,3[,4]]
+      Multi-level runner. Single file: runs levels in order, stopping on fail.
+      Directory: runs all levels on all .md and .yaml files.
+      --levels defaults to 1,2,3. Level 4 returns placeholder (see verify level4).
+      Returns: { status, levels_run, summary, findings }
+
+ANTI-PATTERN SCANNER
+  scan-antipatterns <file>
+      Scan a single file for architecture anti-patterns:
+      - TBD sections (stub phrases)
+      - Missing failure modes (agent spec lacks <failure_modes> or < 3 named modes)
+      - Untyped event fields (type: any or type: object without subfields)
+      - Orphaned agents (not referenced in any workflow)
+      - Orphaned events (not referenced by any agent spec)
+      Each finding has 6 fields: anti_pattern, severity, file, entity, detail, remediation.
+      Returns: { findings, total }
+
+  scan-antipatterns --dir <dir>
+      Scan all .md and .yaml files in directory.
 
 OPTIONS
   --help    Show this help text
@@ -984,6 +1033,841 @@ function cmdValidateNames(args) {
   }
 }
 
+// ─── Lazy loader: js-yaml ─────────────────────────────────────────────────────
+
+/**
+ * Lazy-load js-yaml. Only called by Level 3+ commands.
+ * Levels 1-2 and all earlier commands have zero npm deps at runtime.
+ */
+function requireYaml() {
+  try {
+    return require('js-yaml');
+  } catch (e) {
+    process.stderr.write(JSON.stringify({ error: 'js-yaml not installed. Run: npm install js-yaml', detail: e.message }, null, 2) + '\n');
+    process.exit(1);
+  }
+}
+
+// ─── Command: verify level1 ───────────────────────────────────────────────────
+
+/**
+ * Level 1 verification: check that the file exists on disk.
+ * Zero dependencies — pure fs.existsSync check.
+ */
+function verifyLevel1(filePath) {
+  const exists = fs.existsSync(filePath);
+  const findings = [];
+
+  if (!exists) {
+    findings.push({
+      check: 'file_exists',
+      result: 'fail',
+      detail: `File not found: ${filePath}`,
+    });
+  }
+
+  return {
+    status: exists ? 'passed' : 'gaps_found',
+    level: 1,
+    file: filePath,
+    findings,
+  };
+}
+
+function cmdVerifyLevel1(args) {
+  const filePath = args[0];
+  if (!filePath) error('Usage: verify level1 <file>');
+  output(verifyLevel1(filePath));
+}
+
+// ─── Command: verify level2 ───────────────────────────────────────────────────
+
+// Minimum line counts by document type
+const LEVEL2_MIN_LINES = {
+  agent: 50,
+  schema: 20,
+  failure: 40,
+  topology: 30,
+  default: 50,
+};
+
+// Required XML tags for agent specs (decision [03-01]: XML tags, NOT ## headers)
+const AGENT_REQUIRED_XML_TAGS = [
+  '<role>',
+  '<upstream_input>',
+  '<downstream_consumer>',
+  '<execution_flow>',
+  '<structured_returns>',
+  '<failure_modes>',
+  '<constraints>',
+];
+
+// Required YAML top-level keys for event schema files
+const SCHEMA_REQUIRED_YAML_KEYS = ['name:', 'type:', 'version:', 'payload:', 'error_cases:'];
+
+// Required ## headers for failure mode documents
+const FAILURE_REQUIRED_HEADERS = [
+  '## Failure Mode Catalog',
+  '## Integration Point Failures',
+  '## Residual Risks',
+];
+
+// Required frontmatter fields by document type
+const LEVEL2_REQUIRED_FRONTMATTER = {
+  agent: ['name', 'description', 'tools', 'model', 'color'],
+  schema: ['name'],
+};
+
+/**
+ * Level 2 verification: substantive content checks.
+ * Checks line count, required sections, stub phrases, frontmatter fields.
+ */
+function verifyLevel2(filePath, docType) {
+  const content = safeReadFile(filePath);
+  if (content === null) {
+    return {
+      status: 'gaps_found',
+      level: 2,
+      file: filePath,
+      findings: [{
+        check: 'file_exists',
+        result: 'fail',
+        detail: `Cannot read file: ${filePath}`,
+      }],
+    };
+  }
+
+  const findings = [];
+  const lines = content.split('\n');
+  const lineCount = lines.length;
+  const type = docType || 'default';
+
+  // Check 2a: line count
+  const minLines = LEVEL2_MIN_LINES[type] || LEVEL2_MIN_LINES.default;
+  const lineCountPass = lineCount >= minLines;
+  findings.push({
+    check: 'line_count',
+    result: lineCountPass ? 'pass' : 'fail',
+    detail: lineCountPass
+      ? `Line count ${lineCount} >= minimum ${minLines}`
+      : `Line count ${lineCount} is below minimum ${minLines} for type '${type}'`,
+  });
+
+  // Check 2b: required sections
+  if (type === 'agent') {
+    // Check for XML tags (decision [03-01])
+    const missingTags = AGENT_REQUIRED_XML_TAGS.filter(tag => !content.includes(tag));
+    findings.push({
+      check: 'required_sections',
+      result: missingTags.length === 0 ? 'pass' : 'fail',
+      detail: missingTags.length === 0
+        ? `All 7 required XML tags present: ${AGENT_REQUIRED_XML_TAGS.join(', ')}`
+        : `Missing ${missingTags.length} required XML tag(s): ${missingTags.join(', ')}`,
+    });
+  } else if (type === 'schema') {
+    // Check for YAML top-level keys
+    const missingKeys = SCHEMA_REQUIRED_YAML_KEYS.filter(k => !content.includes(k));
+    findings.push({
+      check: 'required_sections',
+      result: missingKeys.length === 0 ? 'pass' : 'fail',
+      detail: missingKeys.length === 0
+        ? `All required YAML keys present: ${SCHEMA_REQUIRED_YAML_KEYS.join(', ')}`
+        : `Missing YAML key(s): ${missingKeys.join(', ')}`,
+    });
+  } else if (type === 'failure') {
+    // Check for ## headers
+    const missingHeaders = FAILURE_REQUIRED_HEADERS.filter(h => !content.includes(h));
+    findings.push({
+      check: 'required_sections',
+      result: missingHeaders.length === 0 ? 'pass' : 'fail',
+      detail: missingHeaders.length === 0
+        ? `All required section headers present`
+        : `Missing section(s): ${missingHeaders.join(', ')}`,
+    });
+  } else if (type === 'topology') {
+    // Check for topology-specific content: Mermaid graph block, channel table, YAML adjacency
+    const hasMermaid = content.includes('```mermaid') || content.includes('graph ') || content.includes('flowchart ');
+    const hasChannelTable = content.includes('|') && (content.includes('channel') || content.includes('Channel') || content.includes('queue') || content.includes('Queue'));
+    const hasYamlBlock = content.includes('```yaml') || content.includes('nodes:') || content.includes('edges:');
+    const topologyChecks = [hasMermaid, hasChannelTable, hasYamlBlock].filter(Boolean).length;
+    findings.push({
+      check: 'required_sections',
+      result: topologyChecks >= 2 ? 'pass' : 'fail',
+      detail: topologyChecks >= 2
+        ? 'Topology content present (Mermaid graph, channel table, or YAML adjacency)'
+        : `Missing topology content — found ${topologyChecks}/3 expected elements (Mermaid graph, channel table, YAML adjacency)`,
+    });
+  } else {
+    findings.push({
+      check: 'required_sections',
+      result: 'pass',
+      detail: 'No specific section requirements for this document type',
+    });
+  }
+
+  // Check 2c: no stub phrases (reuse scanFileForStubs)
+  const stubResult = scanFileForStubs(filePath);
+  const stubsClean = stubResult ? stubResult.clean : true;
+  findings.push({
+    check: 'stub_phrases',
+    result: stubsClean ? 'pass' : 'fail',
+    detail: stubsClean
+      ? 'No stub phrases found'
+      : `Found ${stubResult.stubs_found} stub phrase(s): ${stubResult.stubs.slice(0, 3).map(s => `"${s.pattern}" at line ${s.line}`).join(', ')}${stubResult.stubs_found > 3 ? ` (+${stubResult.stubs_found - 3} more)` : ''}`,
+  });
+
+  // Check 2d: required frontmatter fields
+  const requiredFields = LEVEL2_REQUIRED_FRONTMATTER[type] || [];
+  if (requiredFields.length > 0) {
+    const fm = extractFrontmatter(content);
+    const missingFmFields = requiredFields.filter(f => !fm[f] || fm[f] === '');
+    findings.push({
+      check: 'frontmatter_fields',
+      result: missingFmFields.length === 0 ? 'pass' : 'fail',
+      detail: missingFmFields.length === 0
+        ? `All required frontmatter fields present: ${requiredFields.join(', ')}`
+        : `Missing frontmatter field(s): ${missingFmFields.join(', ')}`,
+    });
+  } else {
+    findings.push({
+      check: 'frontmatter_fields',
+      result: 'pass',
+      detail: 'No frontmatter field requirements for this document type',
+    });
+  }
+
+  const anyFail = findings.some(f => f.result === 'fail');
+  return {
+    status: anyFail ? 'gaps_found' : 'passed',
+    level: 2,
+    file: filePath,
+    findings,
+  };
+}
+
+function cmdVerifyLevel2(args) {
+  const filePath = args[0];
+  if (!filePath) error('Usage: verify level2 <file> [--type agent|schema|failure|topology]');
+
+  const typeIdx = args.indexOf('--type');
+  const docType = typeIdx !== -1 ? args[typeIdx + 1] : null;
+
+  if (typeIdx !== -1 && !docType) error('--type requires a value: agent, schema, failure, or topology');
+
+  output(verifyLevel2(filePath, docType));
+}
+
+// ─── Command: verify level3 ───────────────────────────────────────────────────
+
+/**
+ * Determine which Level 3 check applies based on file path.
+ */
+function detectDocTypeForLevel3(filePath) {
+  const normalPath = filePath.replace(/\\/g, '/');
+  if (normalPath.includes('/agents/')) return 'agent';
+  if (normalPath.includes('/design/events/') || normalPath.includes('/design/schemas/')) return 'schema';
+  if (normalPath.includes('/design/failure-modes/')) return 'failure';
+  if (normalPath.match(/CONTEXT\.md$/)) return 'context';
+  return null;
+}
+
+/**
+ * Grep for a pattern across all files in a directory tree.
+ * Returns list of files containing the pattern.
+ */
+function grepInDirectory(dir, pattern) {
+  const results = [];
+  if (!fs.existsSync(dir)) return results;
+
+  function recurse(currentDir) {
+    let entries;
+    try {
+      entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      if (entry.isDirectory() && !entry.name.startsWith('.')) {
+        recurse(fullPath);
+      } else if (entry.isFile()) {
+        const content = safeReadFile(fullPath);
+        if (content && content.includes(pattern)) {
+          results.push(fullPath);
+        }
+      }
+    }
+  }
+
+  recurse(dir);
+  return results;
+}
+
+/**
+ * Level 3 verification: cross-reference checks.
+ * Uses js-yaml for YAML event parsing when needed.
+ */
+function verifyLevel3(filePath, designDir) {
+  const resolvedDesignDir = path.resolve(designDir);
+  const content = safeReadFile(filePath);
+  if (content === null) {
+    return {
+      status: 'gaps_found',
+      level: 3,
+      file: filePath,
+      findings: [{
+        check: 'file_exists',
+        result: 'fail',
+        detail: `Cannot read file: ${filePath}`,
+        file: filePath,
+      }],
+    };
+  }
+
+  const docType = detectDocTypeForLevel3(filePath);
+  const findings = [];
+
+  if (docType === 'agent') {
+    // Check 3a: agent must be referenced in at least one workflow file
+    const fm = extractFrontmatter(content);
+    const agentName = fm.name || path.basename(filePath, '.md');
+
+    const workflowsDir = path.join(resolvedDesignDir, 'workflows');
+    const orchestrationDir = path.join(resolvedDesignDir, 'design', 'orchestration');
+
+    const workflowMatches = grepInDirectory(workflowsDir, agentName);
+    const orchestrationMatches = grepInDirectory(orchestrationDir, agentName);
+    const allMatches = [...workflowMatches, ...orchestrationMatches];
+
+    findings.push({
+      check: 'agent_referenced',
+      result: allMatches.length > 0 ? 'pass' : 'fail',
+      detail: allMatches.length > 0
+        ? `Agent '${agentName}' is referenced in ${allMatches.length} workflow/orchestration file(s)`
+        : `Agent '${agentName}' is not referenced in any workflow or orchestration document`,
+      file: filePath,
+    });
+
+  } else if (docType === 'schema') {
+    // Check 3b: event must have at least one producer AND one consumer in agent specs
+    const yaml = requireYaml();
+    let eventName = null;
+
+    try {
+      const parsed = yaml.load(content);
+      if (parsed && parsed.name) {
+        eventName = parsed.name;
+      }
+    } catch {
+      // Fall back to frontmatter extraction
+      const fm = extractFrontmatter(content);
+      eventName = fm.name || path.basename(filePath, path.extname(filePath));
+    }
+
+    if (!eventName) {
+      findings.push({
+        check: 'event_has_producer',
+        result: 'fail',
+        detail: 'Could not determine event name from file',
+        file: filePath,
+      });
+    } else {
+      const agentsDir = path.join(resolvedDesignDir, 'agents');
+
+      // Search for dispatches/subscribes blocks containing the event name
+      let producerFiles = [];
+      let consumerFiles = [];
+
+      if (fs.existsSync(agentsDir)) {
+        const agentFiles = findMarkdownFiles(agentsDir);
+        for (const agentFile of agentFiles) {
+          const agentContent = safeReadFile(agentFile);
+          if (!agentContent) continue;
+
+          // Check for producer (dispatches block)
+          if (agentContent.includes('dispatches:') && agentContent.includes(eventName)) {
+            producerFiles.push(agentFile);
+          }
+          // Check for consumer (subscribes block)
+          if (agentContent.includes('subscribes:') && agentContent.includes(eventName)) {
+            consumerFiles.push(agentFile);
+          }
+        }
+      }
+
+      findings.push({
+        check: 'event_has_producer',
+        result: producerFiles.length > 0 ? 'pass' : 'fail',
+        detail: producerFiles.length > 0
+          ? `Event '${eventName}' has ${producerFiles.length} producer(s)`
+          : `Event '${eventName}' has no producer (no agent dispatches it)`,
+        file: filePath,
+      });
+
+      findings.push({
+        check: 'event_has_consumer',
+        result: consumerFiles.length > 0 ? 'pass' : 'fail',
+        detail: consumerFiles.length > 0
+          ? `Event '${eventName}' has ${consumerFiles.length} consumer(s)`
+          : `Event '${eventName}' has no consumer (no agent subscribes to it)`,
+        file: filePath,
+      });
+    }
+
+  } else if (docType === 'failure') {
+    // Check 3c: failure mode doc must be referenced from corresponding agent spec
+    const componentName = path.basename(filePath, '.md');
+    const agentsDir = path.join(resolvedDesignDir, 'agents');
+    const agentSpecPath = path.join(agentsDir, `${componentName}.md`);
+
+    if (!fs.existsSync(agentSpecPath)) {
+      // Check if any agent references this failure mode
+      const anyReference = grepInDirectory(agentsDir, componentName);
+      findings.push({
+        check: 'failure_modes_linked',
+        result: anyReference.length > 0 ? 'pass' : 'fail',
+        detail: anyReference.length > 0
+          ? `Failure modes for '${componentName}' referenced in ${anyReference.length} agent spec(s)`
+          : `No corresponding agent spec found at agents/${componentName}.md and no agent references this component`,
+        file: filePath,
+      });
+    } else {
+      const agentContent = safeReadFile(agentSpecPath);
+      const refsFailurePath = agentContent && (
+        agentContent.includes(path.basename(filePath)) ||
+        agentContent.includes(componentName) ||
+        agentContent.includes('failure-modes')
+      );
+      findings.push({
+        check: 'failure_modes_linked',
+        result: refsFailurePath ? 'pass' : 'fail',
+        detail: refsFailurePath
+          ? `Failure modes document is referenced in agents/${componentName}.md`
+          : `agents/${componentName}.md does not reference this failure modes document`,
+        file: filePath,
+      });
+    }
+
+  } else if (docType === 'context') {
+    // Check 3d: CONTEXT.md must be referenced in STATE.md
+    const statePath = path.join(resolvedDesignDir, '.planning', 'STATE.md');
+    const altStatePath = path.join(resolvedDesignDir, '.arch', 'STATE.md');
+
+    let stateContent = safeReadFile(statePath) || safeReadFile(altStatePath) || '';
+    const contextPath = 'CONTEXT.md';
+    const referenced = stateContent.includes(contextPath) || stateContent.includes('.arch/CONTEXT.md');
+
+    findings.push({
+      check: 'context_referenced',
+      result: referenced ? 'pass' : 'fail',
+      detail: referenced
+        ? 'CONTEXT.md path is referenced in STATE.md'
+        : 'CONTEXT.md path not found in STATE.md',
+      file: filePath,
+    });
+
+  } else {
+    // Unknown document type — return a neutral result
+    findings.push({
+      check: 'document_type_detected',
+      result: 'pass',
+      detail: `No specific Level 3 checks for this file type (path does not match agents/, design/events/, design/failure-modes/, or CONTEXT.md)`,
+      file: filePath,
+    });
+  }
+
+  const anyFail = findings.some(f => f.result === 'fail');
+  return {
+    status: anyFail ? 'gaps_found' : 'passed',
+    level: 3,
+    file: filePath,
+    findings,
+  };
+}
+
+function cmdVerifyLevel3(args) {
+  const filePath = args[0];
+  if (!filePath) error('Usage: verify level3 <file> --design-dir <dir>');
+
+  const designDirIdx = args.indexOf('--design-dir');
+  const designDir = designDirIdx !== -1 ? args[designDirIdx + 1] : '.';
+
+  if (designDirIdx !== -1 && !designDir) error('--design-dir requires a directory path');
+
+  output(verifyLevel3(filePath, designDir));
+}
+
+// ─── Command: verify run ─────────────────────────────────────────────────────
+
+/**
+ * Auto-detect document type from file path for Level 2 verification.
+ */
+function autoDetectDocType(filePath) {
+  const normalPath = filePath.replace(/\\/g, '/');
+  if (normalPath.includes('/agents/')) return 'agent';
+  if (normalPath.includes('/design/events/') || normalPath.includes('/design/schemas/')) return 'schema';
+  if (normalPath.includes('/design/failure-modes/')) return 'failure';
+  if (normalPath.includes('/design/topology/')) return 'topology';
+  return null;
+}
+
+/**
+ * Find all .md and .yaml files in a directory recursively.
+ */
+function findDocumentFiles(dir) {
+  const results = [];
+
+  function recurse(currentDir) {
+    let entries;
+    try {
+      entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      if (entry.isDirectory() && !entry.name.startsWith('.')) {
+        recurse(fullPath);
+      } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.yaml') || entry.name.endsWith('.yml'))) {
+        results.push(fullPath);
+      }
+    }
+  }
+
+  recurse(dir);
+  return results;
+}
+
+/**
+ * Run verification levels on a single file, stopping if a level fails.
+ */
+function runVerificationOnFile(filePath, levels, designDir) {
+  const allFindings = [];
+  const summary = {};
+  let overallStatus = 'passed';
+
+  for (const level of levels) {
+    if (level === 4) {
+      // Level 4 placeholder
+      summary[`level_4`] = { passed: 0, failed: 0, skipped: 1 };
+      allFindings.push({
+        level: 4,
+        check: 'level4_placeholder',
+        result: 'skip',
+        detail: 'Level 4 requires build-graph — use verify level4 command directly',
+        file: filePath,
+      });
+      continue;
+    }
+
+    let result;
+    if (level === 1) {
+      result = verifyLevel1(filePath);
+    } else if (level === 2) {
+      const docType = autoDetectDocType(filePath);
+      result = verifyLevel2(filePath, docType);
+    } else if (level === 3) {
+      result = verifyLevel3(filePath, designDir || '.');
+    } else {
+      continue;
+    }
+
+    const levelKey = `level_${level}`;
+    const passed = result.findings.filter(f => f.result === 'pass').length;
+    const failed = result.findings.filter(f => f.result === 'fail').length;
+    summary[levelKey] = { passed, failed };
+
+    for (const finding of result.findings) {
+      allFindings.push({ level, ...finding });
+    }
+
+    if (result.status === 'gaps_found') {
+      overallStatus = 'gaps_found';
+      // Cumulative — stop if a level fails
+      break;
+    }
+  }
+
+  return { status: overallStatus, summary, findings: allFindings };
+}
+
+function cmdVerifyRun(args) {
+  const target = args[0];
+  if (!target) error('Usage: verify run <file|dir> [--levels 1,2,3]');
+
+  const levelsIdx = args.indexOf('--levels');
+  const levelsStr = levelsIdx !== -1 ? args[levelsIdx + 1] : '1,2,3';
+  const designDirIdx = args.indexOf('--design-dir');
+  const designDir = designDirIdx !== -1 ? args[designDirIdx + 1] : '.';
+
+  let levels;
+  try {
+    levels = levelsStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+  } catch {
+    error(`Invalid --levels value: ${levelsStr}. Expected comma-separated integers like "1,2,3"`);
+  }
+
+  const isDirectory = fs.existsSync(target) && fs.statSync(target).isDirectory();
+
+  if (isDirectory) {
+    const files = findDocumentFiles(target);
+    const allFindings = [];
+    const aggregateSummary = {};
+
+    for (const filePath of files) {
+      const fileResult = runVerificationOnFile(filePath, levels, designDir);
+
+      for (const [levelKey, counts] of Object.entries(fileResult.summary)) {
+        if (!aggregateSummary[levelKey]) {
+          aggregateSummary[levelKey] = { passed: 0, failed: 0 };
+        }
+        aggregateSummary[levelKey].passed += counts.passed;
+        aggregateSummary[levelKey].failed += counts.failed;
+      }
+
+      allFindings.push(...fileResult.findings);
+    }
+
+    const overallStatus = allFindings.some(f => f.result === 'fail') ? 'gaps_found' : 'passed';
+
+    output({
+      status: overallStatus,
+      levels_run: levels,
+      files_scanned: files.length,
+      summary: aggregateSummary,
+      findings: allFindings,
+    });
+  } else {
+    // Single file
+    const fileResult = runVerificationOnFile(target, levels, designDir);
+
+    output({
+      status: fileResult.status,
+      levels_run: levels,
+      files_scanned: 1,
+      summary: fileResult.summary,
+      findings: fileResult.findings,
+    });
+  }
+}
+
+// ─── Command: scan-antipatterns ───────────────────────────────────────────────
+
+/**
+ * Scan a single file for architecture anti-patterns.
+ * Returns array of findings, each with all 6 required VERF-08 fields.
+ */
+function scanFileForAntiPatterns(filePath, projectRoot) {
+  const content = safeReadFile(filePath);
+  if (content === null) return [];
+
+  const root = projectRoot || findProjectRoot();
+  const normalPath = filePath.replace(/\\/g, '/');
+  const findings = [];
+
+  // Anti-pattern 1: TBD sections (reuse scanFileForStubs)
+  const stubResult = scanFileForStubs(filePath);
+  if (stubResult && !stubResult.clean) {
+    for (const stub of stubResult.stubs) {
+      findings.push({
+        anti_pattern: 'tbd_section',
+        severity: 'blocker',
+        file: filePath,
+        entity: path.basename(filePath),
+        detail: `Stub phrase "${stub.pattern}" found at line ${stub.line}: "${stub.text.slice(0, 80)}"`,
+        remediation: `Replace stub phrase with concrete, specific content. Remove all TBD/placeholder/TODO markers before marking document complete.`,
+      });
+    }
+  }
+
+  // Anti-pattern 2: Missing failure modes (agent spec lacks <failure_modes> or < 3 named modes)
+  if (normalPath.includes('/agents/') || normalPath.includes('agents/')) {
+    const hasFailureModes = content.includes('<failure_modes>');
+    if (!hasFailureModes) {
+      findings.push({
+        anti_pattern: 'missing_failure_modes',
+        severity: 'blocker',
+        file: filePath,
+        entity: path.basename(filePath, '.md'),
+        detail: 'Agent spec is missing <failure_modes> section',
+        remediation: 'Add <failure_modes> section with at least 3 named failure modes (FAILURE-XX format)',
+      });
+    } else {
+      // Count named failure modes (FAILURE- pattern)
+      const failureMatches = content.match(/FAILURE-\d+/g) || [];
+      const uniqueFailures = new Set(failureMatches);
+      if (uniqueFailures.size < 3) {
+        findings.push({
+          anti_pattern: 'missing_failure_modes',
+          severity: 'warning',
+          file: filePath,
+          entity: path.basename(filePath, '.md'),
+          detail: `<failure_modes> section present but has only ${uniqueFailures.size} named failure mode(s) (FAILURE-XX pattern). Minimum 3 required.`,
+          remediation: 'Add more named failure modes with FAILURE-XX identifiers to cover edge cases and error conditions.',
+        });
+      }
+    }
+  }
+
+  // Anti-pattern 3: Untyped event fields (in YAML files: type: any or type: object without subfields)
+  if (filePath.endsWith('.yaml') || filePath.endsWith('.yml')) {
+    const lines = content.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const typeAny = line.match(/^\s+type:\s+any\s*$/);
+      const typeObject = line.match(/^\s+type:\s+object\s*$/);
+
+      if (typeAny) {
+        findings.push({
+          anti_pattern: 'untyped_event_field',
+          severity: 'warning',
+          file: filePath,
+          entity: `line ${i + 1}`,
+          detail: `Field uses "type: any" at line ${i + 1}: "${line.trim()}"`,
+          remediation: 'Replace "type: any" with a specific type (string, integer, boolean, array, or object with properties).',
+        });
+      } else if (typeObject) {
+        // Check if next non-empty line defines subfields (properties: or indented fields)
+        let hasSubfields = false;
+        for (let j = i + 1; j < Math.min(lines.length, i + 5); j++) {
+          const nextLine = lines[j].trim();
+          if (nextLine === '') continue;
+          // If next content is at a deeper indent level, it defines subfields
+          const nextIndent = lines[j].match(/^(\s*)/)[1].length;
+          const currentIndent = line.match(/^(\s*)/)[1].length;
+          if (nextIndent > currentIndent && nextLine !== '') {
+            hasSubfields = true;
+            break;
+          }
+          break;
+        }
+        if (!hasSubfields) {
+          findings.push({
+            anti_pattern: 'untyped_event_field',
+            severity: 'warning',
+            file: filePath,
+            entity: `line ${i + 1}`,
+            detail: `Field uses "type: object" without nested subfields at line ${i + 1}: "${line.trim()}"`,
+            remediation: 'Add nested properties to "type: object" fields to define the object structure.',
+          });
+        }
+      }
+    }
+  }
+
+  // Anti-pattern 4: Orphaned agents (agent spec in agents/ not referenced in any workflow)
+  if (normalPath.includes('/agents/') || normalPath.includes('agents/')) {
+    const fm = extractFrontmatter(content);
+    const agentName = fm.name || path.basename(filePath, '.md');
+    const workflowsDir = path.join(root, 'workflows');
+
+    const workflowMatches = grepInDirectory(workflowsDir, agentName);
+
+    if (workflowMatches.length === 0) {
+      findings.push({
+        anti_pattern: 'orphaned_agent',
+        severity: 'warning',
+        file: filePath,
+        entity: agentName,
+        detail: `Agent '${agentName}' is not referenced in any workflow file in workflows/`,
+        remediation: `Add agent '${agentName}' to the relevant workflow file(s) in workflows/ to establish its place in the execution graph.`,
+      });
+    }
+  }
+
+  // Anti-pattern 5: Orphaned events (event name in events.yaml not referenced by any agent spec)
+  if (path.basename(filePath) === 'events.yaml' || path.basename(filePath) === 'events.yml') {
+    const yaml = requireYaml();
+    let eventsData = null;
+    try {
+      eventsData = yaml.load(content);
+    } catch (e) {
+      // If YAML parse fails, skip orphaned event check
+    }
+
+    if (eventsData && typeof eventsData === 'object') {
+      const agentsDir = path.join(root, 'agents');
+      const allAgentContent = [];
+
+      if (fs.existsSync(agentsDir)) {
+        const agentFiles = findMarkdownFiles(agentsDir);
+        for (const af of agentFiles) {
+          const ac = safeReadFile(af);
+          if (ac) allAgentContent.push(ac);
+        }
+      }
+      const combinedAgentContent = allAgentContent.join('\n');
+
+      // Extract event names — support array of objects or object with event names as keys
+      const eventNames = [];
+      if (Array.isArray(eventsData)) {
+        for (const ev of eventsData) {
+          if (ev && ev.name) eventNames.push(ev.name);
+        }
+      } else {
+        for (const [key, val] of Object.entries(eventsData)) {
+          if (typeof val === 'object' && val !== null && val.name) {
+            eventNames.push(val.name);
+          } else if (typeof key === 'string' && key.match(/^[A-Z]/)) {
+            // PascalCase keys as event names
+            eventNames.push(key);
+          }
+        }
+      }
+
+      for (const eventName of eventNames) {
+        if (!combinedAgentContent.includes(eventName)) {
+          findings.push({
+            anti_pattern: 'orphaned_event',
+            severity: 'warning',
+            file: filePath,
+            entity: eventName,
+            detail: `Event '${eventName}' defined in events.yaml is not referenced in any agent spec (no dispatches:/subscribes: mention)`,
+            remediation: `Ensure at least one agent dispatches and one agent subscribes to event '${eventName}', or remove the event from events.yaml if unused.`,
+          });
+        }
+      }
+    }
+  }
+
+  return findings;
+}
+
+function cmdScanAntiPatterns(args) {
+  const dirIdx = args.indexOf('--dir');
+  const root = findProjectRoot();
+
+  if (dirIdx !== -1) {
+    const dir = args[dirIdx + 1];
+    if (!dir) error('--dir requires a directory path');
+    if (!fs.existsSync(dir)) error(`Directory not found: ${dir}`, { dir });
+
+    const files = findDocumentFiles(dir);
+    const allFindings = [];
+
+    for (const filePath of files) {
+      const findings = scanFileForAntiPatterns(filePath, root);
+      allFindings.push(...findings);
+    }
+
+    output({
+      findings: allFindings,
+      total: allFindings.length,
+      files_scanned: files.length,
+    });
+  } else {
+    const filePath = args[0];
+    if (!filePath) error('Usage: scan-antipatterns <file> | scan-antipatterns --dir <dir>');
+    if (!fs.existsSync(filePath)) error(`File not found: ${filePath}`, { file: filePath });
+
+    const findings = scanFileForAntiPatterns(filePath, root);
+    output({
+      findings,
+      total: findings.length,
+    });
+  }
+}
+
 // ─── Main Dispatcher ──────────────────────────────────────────────────────────
 
 const argv = process.argv.slice(2);
@@ -1032,6 +1916,24 @@ switch (command) {
 
   case 'validate-names':
     cmdValidateNames(subArgs);
+    break;
+
+  case 'verify': {
+    const sub = subArgs[0];
+    const subSubArgs = subArgs.slice(1);
+    switch (sub) {
+      case 'level1': cmdVerifyLevel1(subSubArgs); break;
+      case 'level2': cmdVerifyLevel2(subSubArgs); break;
+      case 'level3': cmdVerifyLevel3(subSubArgs); break;
+      case 'run':    cmdVerifyRun(subSubArgs); break;
+      default:
+        error(`Unknown verify sub-command: ${sub}. Use: level1, level2, level3, run`);
+    }
+    break;
+  }
+
+  case 'scan-antipatterns':
+    cmdScanAntiPatterns(subArgs);
     break;
 
   default:

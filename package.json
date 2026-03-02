@@ -1,0 +1,16 @@
+{
+  "name": "architecture-gsd",
+  "version": "1.0.0",
+  "description": "Architecture GSD — Agentic architecture design system for producing complete, cross-referenced architecture packages",
+  "main": "bin/arch-tools.js",
+  "scripts": {
+    "test": "echo \"No test runner configured\" && exit 0"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
