@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Given a description of an agentic system, produce a complete, internally consistent, cross-referenced architecture package that a development team can implement without needing to make architectural decisions.
-**Current focus:** Phase 4 — Complete. Phase 5 next.
+**Current focus:** Phase 5 — In progress. Plan 1 of N complete.
 
 ## Current Position
 
-Phase: 4 of 5 (Verification, Integration, and Quality Gates) — COMPLETE
-Plan: 5 of 5 complete
-Status: Phase 4 Complete
-Last activity: 2026-03-02 — Completed plan 04-05: verify-phase workflow (460 lines, 9-step pipeline), MANIFEST.md template, verification-patterns.md updated (XML tags + 4-value status enum)
+Phase: 5 of 5 (Self-Design Validation and CLI Polish) — IN PROGRESS
+Plan: 1 of 5 complete
+Status: Phase 5 Plan 1 complete
+Last activity: 2026-03-02 — Completed plan 05-01: /arch-gsd:resume (161 lines, 5-step) and /arch-gsd:progress (159 lines, 4-step read-only) workflows replacing Phase 1 stubs
 
-Progress: [████████████████] 84%
+Progress: [█████████████████] 88%
 
 ## Performance Metrics
 
@@ -31,6 +31,7 @@ Progress: [████████████████] 84%
 | 2. Intake and Intent Extraction | 2/2 | 5 min | 2.5 min |
 | 3. Core Design Pipeline | 6/6 | ~40 min | ~6.7 min |
 | 4. Verification, Integration, and Quality Gates | 5/5 | 29 min | 5.8 min |
+| 5. Self-Design Validation and CLI Polish | 1/5 | 2 min | 2 min |
 
 **Recent Trend:**
 - Last 5 plans: ~4.4 min
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [04-05]: DIGEST.md written as FINAL step (Step 8 after MANIFEST.md Step 7) — ensures digest captures all verified documents, integration results, and complete state
 - [04-05]: Pipeline continues on gaps_found: both passed AND gaps_found allow full pipeline completion; only failed and human_needed stop the pipeline
 - [04-05]: verification-patterns.md section 2b uses XML tags not ## headers — reference document now consistent with arch-tools.js verify level2 implementation
+- [05-01]: resume.md reads STATE.md directly with Read tool — arch-gsd has no gsd-tools.js; no .continue-here files or agent-history.json
+- [05-01]: progress.md enforced read-only via allowed-tools: Read, Bash, Grep, Glob (Write/Edit/Task excluded from frontmatter)
+- [05-01]: Phase status in progress.md inferred from STATE.md Current Position numeric comparison ([DONE]/[ACTIVE]/[PLANNED])
 
 ### Pending Todos
 
@@ -90,5 +94,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Completed 04-05-PLAN.md — verify-phase workflow (460 lines, 9-step pipeline), MANIFEST.md template, verification-patterns.md updated. Phase 4 ALL 5/5 plans complete.
-Resume with: /arch-gsd:execute-phase 5 (after /clear for fresh context)
+Stopped at: Completed 05-01-PLAN.md — /arch-gsd:resume and /arch-gsd:progress workflows (Phase 1 stubs replaced, 161+159 lines). Phase 5 Plan 1/5 complete.
+Resume with: /gsd:execute-phase 5 (plan 02 next — VALD-01 pipeline run)
