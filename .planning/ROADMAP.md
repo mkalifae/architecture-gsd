@@ -136,12 +136,12 @@ Plans:
   4. Self-design has explicit convergence criteria enforced during the run — the system does not enter an infinite gap-closure loop, and a DEFERRED.md is produced listing any gaps explicitly deferred rather than silently papered over
   5. Running `/arch-gsd:resume` after a simulated context reset restores working state from STATE.md — the next agent in the pipeline executes correctly without any prior conversation context
 
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 05-01: /arch-gsd:resume and /arch-gsd:progress workflows
-- [ ] 05-02: Self-design run on a real non-trivial agentic system (VALD-01)
-- [ ] 05-03: Self-design run on Architecture GSD itself — convergence criteria, DEFERRED.md protocol (VALD-02, VALD-03, VALD-04)
+- [ ] 05-01-PLAN.md — /arch-gsd:resume and /arch-gsd:progress workflow implementation (STAT-05)
+- [ ] 05-02-PLAN.md — VALD-01: full pipeline run on Code Review Automation Pipeline (6-agent external system)
+- [ ] 05-03-PLAN.md — VALD-02/03/04: self-design run on Architecture GSD itself with convergence criteria, DEFERRED.md, REVIEW-CHECKLIST.md
 
 ---
 
