@@ -86,12 +86,12 @@ Plans:
 **Plans:** 6 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — arch-researcher and arch-roadmapper agent specs: WebSearch/Context7 research pipeline, complexity-adaptive phase count (3/5/7), RESEARCH.md and ROADMAP.md output
-- [ ] 03-02-PLAN.md — arch-planner agent spec: wave assignment algorithm (ARCHITECTURE_DEPENDENCY_RULES), GSD-compatible PLAN.md production, goal-backward must_haves derivation
-- [ ] 03-03-PLAN.md — arch-checker agent spec: 8-dimension adversarial quality framework, structured issue YAML, blocker/warning/info severity, explicit framing distinction from arch-verifier
-- [ ] 03-04-PLAN.md — arch-executor agent spec: dual-format output (markdown + YAML), 5 document types, deviation rules (auto-complete/document/flag/STOP), required-section enforcement
-- [ ] 03-05-PLAN.md — context-engineer, schema-designer, and failure-analyst agent specs: context flow derivation, typed event schema production, bottleneck-first failure analysis
-- [ ] 03-06-PLAN.md — /arch-gsd:execute-phase workflow: full pipeline orchestration with prerequisite checks, bounded planner-checker loop (max 3), parallel wave execution, STATE.md update
+- [x] 03-01-PLAN.md — arch-researcher and arch-roadmapper agent specs: WebSearch/Context7 research pipeline, complexity-adaptive phase count (3/5/7), RESEARCH.md and ROADMAP.md output
+- [x] 03-02-PLAN.md — arch-planner agent spec: wave assignment algorithm (ARCHITECTURE_DEPENDENCY_RULES), GSD-compatible PLAN.md production, goal-backward must_haves derivation
+- [x] 03-03-PLAN.md — arch-checker agent spec: 8-dimension adversarial quality framework, structured issue YAML, blocker/warning/info severity, explicit framing distinction from arch-verifier
+- [x] 03-04-PLAN.md — arch-executor agent spec: dual-format output (markdown + YAML), 5 document types, deviation rules (auto-complete/document/flag/STOP), required-section enforcement
+- [x] 03-05-PLAN.md — context-engineer, schema-designer, and failure-analyst agent specs: context flow derivation, typed event schema production, bottleneck-first failure analysis
+- [x] 03-06-PLAN.md — /arch-gsd:execute-phase workflow: full pipeline orchestration with prerequisite checks, bounded planner-checker loop (max 3), parallel wave execution, STATE.md update
 
 ---
 
@@ -154,7 +154,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation, Tooling, and Agent Scaffold | 4/4 | ✓ Complete | 2026-02-27 |
 | 2. Intake and Intent Extraction | 2/2 | ✓ Complete | 2026-02-28 |
-| 3. Core Design Pipeline | 0/6 | Planned | - |
+| 3. Core Design Pipeline | 6/6 | ✓ Complete | 2026-03-02 |
 | 4. Verification, Integration, and Quality Gates | 0/5 | Not started | - |
 | 5. Self-Design Validation and CLI Polish | 0/3 | Not started | - |
 
