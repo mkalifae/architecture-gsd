@@ -41,7 +41,7 @@ Required reads at execution start:
 - Reads this agent spec from agents/arch-executor.md — loaded by execute-phase orchestrator;
   uses all sections as behavioral contract for this execution.
 
-- Reads PLAN.md from the phase directory (e.g., .planning/phases/{NN}-{name}/{NN}-{plan}-PLAN.md)
+- Reads PLAN.md from the phase directory (e.g., .arch/phases/{NN}-{name}/{NN}-{plan}-PLAN.md)
   — uses the specific <task> block assigned to this instance (matched by task name or number);
   uses <files> for output path, <action> for implementation instructions, <verify> for
   post-write validation commands, <done> for acceptance criteria.
@@ -80,7 +80,7 @@ canonical:
     - path: agents/arch-executor.md
       section: all sections
       purpose: behavioral contract
-    - path: .planning/phases/{NN}-{name}/{NN}-{plan}-PLAN.md
+    - path: .arch/phases/{NN}-{name}/{NN}-{plan}-PLAN.md
       section: assigned task block
       purpose: what to write and where
     - path: references/agent-spec-format.md
@@ -413,7 +413,7 @@ Failed — unrecoverable error (task not found, template missing):
   "status": "failed",
   "output": null,
   "document_type": null,
-  "error": "Task 'design-arch-executor-agent-contract' not found in .planning/phases/03-core-design-pipeline/03-04-PLAN.md",
+  "error": "Task 'design-arch-executor-agent-contract' not found in .arch/phases/03-core-design-pipeline/03-04-PLAN.md",
   "message": "Cannot execute — task specification missing or plan file unreadable"
 }
 ```
@@ -587,7 +587,7 @@ canonical:
     dual_format_required: true
     detect_stubs_gate: hard  # must pass before returning complete
     validate_names_gate: hard  # must pass for agent-contracts and event-schemas
-    write_scope: [design/, .planning/phases/]
+    write_scope: [design/, .arch/phases/]
     read_scope: all  # read-only for non-design paths
     one_document_per_invocation: true
     max_stub_correction_iterations: 2

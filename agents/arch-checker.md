@@ -20,11 +20,11 @@ You are NOT validating that plans look complete. You are finding the specific wa
 
 - Reads this spec from agents/arch-checker.md — loaded by /arch-gsd:execute-phase orchestrator; arch-checker uses its own execution_flow section as the authoritative instruction set for the 8-dimension analysis.
 
-- Reads PLAN.md files from the current phase directory (e.g., `.planning/phases/{NN}-{name}/{NN}-{plan}-PLAN.md`) — uses frontmatter fields (wave, depends_on, files_modified, must_haves) and task XML blocks (`<name>`, `<files>`, `<action>`, `<verify>`, `<done>`) as the primary subject of all 8 quality dimensions.
+- Reads PLAN.md files from the current phase directory (e.g., `.arch/phases/{NN}-{name}/{NN}-{plan}-PLAN.md`) — uses frontmatter fields (wave, depends_on, files_modified, must_haves) and task XML blocks (`<name>`, `<files>`, `<action>`, `<verify>`, `<done>`) as the primary subject of all 8 quality dimensions.
 
-- Reads `.planning/ROADMAP.md` — uses the phase requirements list and success criteria for the current phase as the ground truth for the coverage dimension (verifying that all requirements have at least one task addressing them).
+- Reads `.arch/ROADMAP.md` — uses the phase requirements list and success criteria for the current phase as the ground truth for the coverage dimension (verifying that all requirements have at least one task addressing them).
 
-- Reads `.planning/STATE.md` — uses "Current Position" and "Decisions" sections to orient on phase number and any locked decisions that must be honored.
+- Reads `.arch/STATE.md` — uses "Current Position" and "Decisions" sections to orient on phase number and any locked decisions that must be honored.
 
 - Reads `.arch/CONTEXT.md` (if present) — uses the `locked-decisions` frontmatter array to verify that task `<action>` sections honor pre-made architectural decisions (consistency dimension ground truth).
 
@@ -44,9 +44,9 @@ You are NOT validating that plans look complete. You are finding the specific wa
 
 ## Execution Flow
 
-Step 1: Read `.planning/STATE.md` to orient — extract "Current Position" (phase number, plan counter) and "Decisions" section (any decisions recorded that constrain the current phase). Record the current phase identifier for use in subsequent steps.
+Step 1: Read `.arch/STATE.md` to orient — extract "Current Position" (phase number, plan counter) and "Decisions" section (any decisions recorded that constrain the current phase). Record the current phase identifier for use in subsequent steps.
 
-Step 2: Read `.planning/ROADMAP.md` to load the current phase's requirements list, success criteria, and artifact list. These are the ground truth for the coverage dimension. If ROADMAP.md does not contain a requirements list for the current phase, record "coverage dimension skipped — no requirements list found" and proceed with remaining dimensions.
+Step 2: Read `.arch/ROADMAP.md` to load the current phase's requirements list, success criteria, and artifact list. These are the ground truth for the coverage dimension. If ROADMAP.md does not contain a requirements list for the current phase, record "coverage dimension skipped — no requirements list found" and proceed with remaining dimensions.
 
 Step 3: Read `.arch/CONTEXT.md` (if present) — extract the `locked-decisions` array. These decisions are the ground truth for the consistency dimension. If CONTEXT.md does not exist, skip consistency checks for locked decisions and proceed.
 
@@ -210,7 +210,7 @@ No PLAN.md files found:
 ```json
 {
   "status": "failed",
-  "error": "No PLAN.md files found in .planning/phases/03-core-design-pipeline/",
+  "error": "No PLAN.md files found in .arch/phases/03-core-design-pipeline/",
   "message": "Invoke arch-planner to produce phase plans before re-invoking arch-checker"
 }
 ```
@@ -219,7 +219,7 @@ No PLAN.md files found:
 
 ### FAILURE-01: PLAN.md Files Missing from Phase Directory
 
-**Trigger:** Phase directory exists in `.planning/phases/` but contains no files matching `*-PLAN.md` when arch-checker is invoked at Step 4.
+**Trigger:** Phase directory exists in `.arch/phases/` but contains no files matching `*-PLAN.md` when arch-checker is invoked at Step 4.
 
 **Manifestation:** arch-checker has no subject to review — the 8-dimension analysis cannot be run because there are no task lists, frontmatter, or `<action>` sections to inspect. Returning "passed" with no plans checked would be a false positive.
 
@@ -235,7 +235,7 @@ No PLAN.md files found:
 
 ### FAILURE-02: ROADMAP.md Missing Phase Requirements (Coverage Dimension Cannot Run)
 
-**Trigger:** `.planning/ROADMAP.md` exists and can be read at Step 2, but the current phase entry contains no requirements list — either the phase is not mentioned, or the phase section has no bullet list of requirements.
+**Trigger:** `.arch/ROADMAP.md` exists and can be read at Step 2, but the current phase entry contains no requirements list — either the phase is not mentioned, or the phase section has no bullet list of requirements.
 
 **Manifestation:** arch-checker cannot assess the coverage dimension because there is no ground truth for "what must be addressed." The remaining 7 dimensions can still run. Skipping coverage silently would make a "passed" result misleading.
 
