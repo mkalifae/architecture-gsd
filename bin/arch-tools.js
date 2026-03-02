@@ -1261,12 +1261,15 @@ function cmdVerifyLevel2(args) {
 
 /**
  * Determine which Level 3 check applies based on file path.
+ * Handles both absolute paths (/path/to/agents/foo.md) and relative paths (agents/foo.md).
  */
 function detectDocTypeForLevel3(filePath) {
   const normalPath = filePath.replace(/\\/g, '/');
-  if (normalPath.includes('/agents/')) return 'agent';
-  if (normalPath.includes('/design/events/') || normalPath.includes('/design/schemas/')) return 'schema';
-  if (normalPath.includes('/design/failure-modes/')) return 'failure';
+  // Match both /agents/foo.md and agents/foo.md patterns
+  if (normalPath.includes('/agents/') || normalPath.startsWith('agents/') || normalPath === 'agents') return 'agent';
+  if (normalPath.includes('/design/events/') || normalPath.startsWith('design/events/') ||
+      normalPath.includes('/design/schemas/') || normalPath.startsWith('design/schemas/')) return 'schema';
+  if (normalPath.includes('/design/failure-modes/') || normalPath.startsWith('design/failure-modes/')) return 'failure';
   if (normalPath.match(/CONTEXT\.md$/)) return 'context';
   return null;
 }
@@ -1504,10 +1507,11 @@ function cmdVerifyLevel3(args) {
  */
 function autoDetectDocType(filePath) {
   const normalPath = filePath.replace(/\\/g, '/');
-  if (normalPath.includes('/agents/')) return 'agent';
-  if (normalPath.includes('/design/events/') || normalPath.includes('/design/schemas/')) return 'schema';
-  if (normalPath.includes('/design/failure-modes/')) return 'failure';
-  if (normalPath.includes('/design/topology/')) return 'topology';
+  if (normalPath.includes('/agents/') || normalPath.startsWith('agents/')) return 'agent';
+  if (normalPath.includes('/design/events/') || normalPath.startsWith('design/events/') ||
+      normalPath.includes('/design/schemas/') || normalPath.startsWith('design/schemas/')) return 'schema';
+  if (normalPath.includes('/design/failure-modes/') || normalPath.startsWith('design/failure-modes/')) return 'failure';
+  if (normalPath.includes('/design/topology/') || normalPath.startsWith('design/topology/')) return 'topology';
   return null;
 }
 
@@ -1573,8 +1577,12 @@ function runVerificationOnFile(filePath, levels, designDir) {
     }
 
     const levelKey = `level_${level}`;
-    const passed = result.findings.filter(f => f.result === 'pass').length;
+    // For level 1: empty findings means the file exists (1 implicit pass)
+    const explicitPassed = result.findings.filter(f => f.result === 'pass').length;
     const failed = result.findings.filter(f => f.result === 'fail').length;
+    const passed = (level === 1 && result.findings.length === 0 && result.status === 'passed')
+      ? 1
+      : explicitPassed;
     summary[levelKey] = { passed, failed };
 
     for (const finding of result.findings) {
