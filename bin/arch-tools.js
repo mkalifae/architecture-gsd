@@ -6,7 +6,8 @@
  * Provides programmatic tooling for all Phase 1-4 command groups:
  * frontmatter CRUD, stub detection, phase state management,
  * CONTEXT.md validation, naming convention validation,
- * and multi-level verification engine (Levels 1-3) plus anti-pattern scanner.
+ * multi-level verification engine (Levels 1-4), anti-pattern scanner,
+ * and Level 4 YAML graph traversal (build-graph, check-cycles, find-orphans).
  *
  * Usage: node bin/arch-tools.js <command> [args]
  *
@@ -34,7 +35,12 @@
  *   verify level2 <file> [--type agent|schema|failure|topology]
  *                                                 Check substantive content (Level 2)
  *   verify level3 <file> --design-dir <dir>       Check cross-references (Level 3)
- *   verify run <file|dir> [--levels 1,2,3]        Multi-level verification runner
+ *   verify level4 --design-dir <dir>              Level 4: full graph consistency check
+ *   verify run <file|dir> [--levels 1,2,3,4]      Multi-level verification runner
+ *
+ *   build-graph --design-dir <dir>                Build agent+event adjacency graph from YAML
+ *   check-cycles --design-dir <dir>               Detect circular agent spawning via DFS
+ *   find-orphans --design-dir <dir>               Report orphaned agents and events
  *
  *   scan-antipatterns <file>                      Scan file for architecture anti-patterns
  *   scan-antipatterns --dir <dir>                 Scan all files in directory
@@ -419,7 +425,7 @@ NAMING VALIDATION
   validate-names --dir <directory>
       Scan all files in directory.
 
-VERIFICATION ENGINE (Levels 1-3)
+VERIFICATION ENGINE (Levels 1-4)
   verify level1 <file>
       Level 1: Check file exists on disk.
       Returns: { status, level, file, findings }
@@ -436,11 +442,35 @@ VERIFICATION ENGINE (Levels 1-3)
       Requires js-yaml for YAML event parsing.
       Returns: { status, level, file, findings }
 
-  verify run <file|dir> [--levels 1,2,3[,4]]
+  verify level4 --design-dir <dir>
+      Level 4: Full graph consistency — builds agent+event adjacency graph,
+      checks event name resolution, agent name resolution, cycle detection,
+      orphan detection, and name-file match for all agents.
+      Runs all 5 Level 4 checks (4a-4e). Requires js-yaml.
+      Returns: { status, level, findings, graph_stats }
+
+  verify run <file|dir> [--levels 1,2,3,4]
       Multi-level runner. Single file: runs levels in order, stopping on fail.
       Directory: runs all levels on all .md and .yaml files.
-      --levels defaults to 1,2,3. Level 4 returns placeholder (see verify level4).
+      --levels defaults to 1,2,3. Include 4 to run Level 4 (directory mode).
       Returns: { status, levels_run, summary, findings }
+
+LEVEL 4 GRAPH COMMANDS
+  build-graph --design-dir <dir>
+      Build a complete agent+event adjacency graph from YAML.
+      Loads events.yaml as canonical registry, extracts YAML blocks from
+      agent specs, builds spawns edges from workflow files.
+      Returns: { agents, events, edges } graph JSON.
+
+  check-cycles --design-dir <dir>
+      Detect circular agent spawning dependencies via in-house DFS.
+      Builds spawns adjacency list and runs cycle detection.
+      Returns: { cycles_found, cycles }
+
+  find-orphans --design-dir <dir>
+      Report agents unreferenced in workflows, events with no producer,
+      and events with no consumer.
+      Returns: { findings, total }
 
 ANTI-PATTERN SCANNER
   scan-antipatterns <file>
@@ -1552,15 +1582,8 @@ function runVerificationOnFile(filePath, levels, designDir) {
 
   for (const level of levels) {
     if (level === 4) {
-      // Level 4 placeholder
-      summary[`level_4`] = { passed: 0, failed: 0, skipped: 1 };
-      allFindings.push({
-        level: 4,
-        check: 'level4_placeholder',
-        result: 'skip',
-        detail: 'Level 4 requires build-graph — use verify level4 command directly',
-        file: filePath,
-      });
+      // Level 4 is a directory-level check — run once via cmdVerifyRun, not per-file
+      // Skip silently here; cmdVerifyRun handles it after the per-file loop
       continue;
     }
 
@@ -1636,6 +1659,21 @@ function cmdVerifyRun(args) {
       allFindings.push(...fileResult.findings);
     }
 
+    // Level 4 runs once for the whole design directory (not per-file)
+    if (levels.includes(4)) {
+      const l4Result = verifyLevel4(designDir);
+      const l4Passed = l4Result.findings.filter(f => f.result === 'pass').length;
+      const l4Failed = l4Result.findings.filter(f => f.result === 'fail').length;
+      if (!aggregateSummary['level_4']) {
+        aggregateSummary['level_4'] = { passed: 0, failed: 0 };
+      }
+      aggregateSummary['level_4'].passed += l4Passed;
+      aggregateSummary['level_4'].failed += l4Failed;
+      for (const finding of l4Result.findings) {
+        allFindings.push({ level: 4, ...finding });
+      }
+    }
+
     const overallStatus = allFindings.some(f => f.result === 'fail') ? 'gaps_found' : 'passed';
 
     output({
@@ -1657,6 +1695,646 @@ function cmdVerifyRun(args) {
       findings: fileResult.findings,
     });
   }
+}
+
+
+// ─── Level 4 Graph: extractYamlBlocks and buildGraph ────────────────────────────────────────────
+
+/**
+ * Extract all ```yaml code blocks from markdown content.
+ * Scans the ENTIRE document body regardless of which XML section the block appears in.
+ * Returns array of raw YAML strings (the content inside the fences).
+ */
+function extractYamlBlocks(content) {
+  const blocks = [];
+  const regex = /```yaml\n([\s\S]+?)```/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    blocks.push(match[1]);
+  }
+  return blocks;
+}
+
+/**
+ * Build a complete agent+event adjacency graph from the design directory.
+ *
+ * Step 1: Load events.yaml as the CANONICAL event registry (definitions).
+ * Step 2: Parse agent specs to extract dispatches/subscribes references.
+ * Step 3: Parse workflow files to extract agent spawning edges.
+ * Step 4: Return the combined graph.
+ *
+ * Returns: { agents, events, edges } or { error } if events.yaml missing.
+ */
+function buildGraph(designDir) {
+  const yaml = requireYaml();
+  const resolvedDir = path.resolve(designDir);
+
+  // ── Step 1: Load events.yaml as canonical registry ──────────────────────
+  // Try both design/events.yaml and events.yaml locations
+  const eventsYamlPaths = [
+    path.join(resolvedDir, 'design', 'events.yaml'),
+    path.join(resolvedDir, 'events.yaml'),
+  ];
+
+  let eventsYamlPath = null;
+  let eventsData = null;
+
+  for (const p of eventsYamlPaths) {
+    if (fs.existsSync(p)) {
+      eventsYamlPath = p;
+      try {
+        const rawYaml = fs.readFileSync(p, 'utf-8');
+        eventsData = yaml.load(rawYaml);
+      } catch (e) {
+        return { error: `Failed to parse events.yaml at ${p}: ${e.message}` };
+      }
+      break;
+    }
+  }
+
+  if (!eventsYamlPath || eventsData === null) {
+    return {
+      error: `events.yaml not found at ${eventsYamlPaths.join(' or ')} — cannot build graph for Level 4.`,
+      searched_paths: eventsYamlPaths,
+    };
+  }
+
+  // Build events map: eventName -> { file, producers: [], consumers: [] }
+  const events = {};
+
+  if (Array.isArray(eventsData)) {
+    // Array format: [{name: "EventName", ...}, ...]
+    for (const ev of eventsData) {
+      if (ev && typeof ev === 'object' && ev.name) {
+        events[ev.name] = { file: eventsYamlPath, producers: [], consumers: [] };
+      }
+    }
+  } else if (eventsData && typeof eventsData === 'object') {
+    // Object format: keys are event names or object has event entries
+    for (const [key, val] of Object.entries(eventsData)) {
+      if (key.match(/^[A-Z]/)) {
+        // PascalCase key = event name
+        events[key] = { file: eventsYamlPath, producers: [], consumers: [] };
+      } else if (typeof val === 'object' && val !== null && val.name) {
+        events[val.name] = { file: eventsYamlPath, producers: [], consumers: [] };
+      }
+    }
+  }
+
+  // ── Step 2: Parse agent specs ─────────────────────────────────────────────────────
+  const agents = {};
+  const agentsDir = path.join(resolvedDir, 'agents');
+
+  if (fs.existsSync(agentsDir)) {
+    const agentFiles = findMarkdownFiles(agentsDir);
+
+    for (const agentFile of agentFiles) {
+      const agentContent = safeReadFile(agentFile);
+      if (!agentContent) continue;
+
+      const fm = extractFrontmatter(agentContent);
+      const agentName = fm.name || path.basename(agentFile, '.md');
+
+      const dispatches = [];
+      const subscribes = [];
+
+      // Extract all YAML blocks from the entire document body
+      const yamlBlocks = extractYamlBlocks(agentContent);
+
+      const agentSpawns = [];
+
+      for (const block of yamlBlocks) {
+        let parsed;
+        try {
+          parsed = yaml.load(block);
+        } catch {
+          continue; // skip malformed YAML blocks
+        }
+        if (!parsed || typeof parsed !== 'object') continue;
+
+        // Look for dispatches: array
+        if (Array.isArray(parsed.dispatches)) {
+          for (const item of parsed.dispatches) {
+            const evName = typeof item === 'string' ? item : (item && item.event ? item.event : null);
+            if (evName) dispatches.push(evName);
+          }
+        }
+        // Look for subscribes: array
+        if (Array.isArray(parsed.subscribes)) {
+          for (const item of parsed.subscribes) {
+            const evName = typeof item === 'string' ? item : (item && item.event ? item.event : null);
+            if (evName) subscribes.push(evName);
+          }
+        }
+        // Look for spawns: array (agent-to-agent spawning)
+        if (Array.isArray(parsed.spawns)) {
+          for (const item of parsed.spawns) {
+            const targetName = typeof item === 'string' ? item : (item && item.agent ? item.agent : null);
+            if (targetName) agentSpawns.push(targetName);
+          }
+        }
+      }
+
+      agents[agentName] = {
+        file: agentFile,
+        dispatches,
+        subscribes,
+        referenced_by: [],
+        spawns: agentSpawns,
+      };
+
+      // Wire up events graph: agent is a producer for each dispatched event
+      for (const evName of dispatches) {
+        if (events[evName]) {
+          if (!events[evName].producers.includes(agentName)) {
+            events[evName].producers.push(agentName);
+          }
+        }
+      }
+      // Wire up events graph: agent is a consumer for each subscribed event
+      for (const evName of subscribes) {
+        if (events[evName]) {
+          if (!events[evName].consumers.includes(agentName)) {
+            events[evName].consumers.push(agentName);
+          }
+        }
+      }
+    }
+  }
+
+  // ── Step 3: Parse workflow files for spawning edges ─────────────────────────────
+  const workflowsDir = path.join(resolvedDir, 'workflows');
+  const edges = { spawns: [], produces: [], consumes: [] };
+
+  if (fs.existsSync(workflowsDir)) {
+    const workflowFiles = findMarkdownFiles(workflowsDir);
+
+    for (const wfFile of workflowFiles) {
+      const wfContent = safeReadFile(wfFile);
+      if (!wfContent) continue;
+
+      const wfName = path.basename(wfFile, '.md');
+
+      for (const agentName of Object.keys(agents)) {
+        // Patterns: agents/name.md, agent name mentioned in workflow
+        const isReferenced =
+          wfContent.includes(`agents/${agentName}.md`) ||
+          wfContent.includes(`agents/${agentName}`) ||
+          wfContent.includes(agentName);
+
+        if (isReferenced) {
+          if (!agents[agentName].referenced_by.includes(wfName)) {
+            agents[agentName].referenced_by.push(wfName);
+          }
+          edges.spawns.push({ from: wfName, to: agentName });
+        }
+      }
+
+      // Also extract spawns: YAML blocks from workflows
+      const yamlBlocks = extractYamlBlocks(wfContent);
+      for (const block of yamlBlocks) {
+        let parsed;
+        try {
+          parsed = yaml.load(block);
+        } catch {
+          continue;
+        }
+        if (!parsed || typeof parsed !== 'object') continue;
+        if (Array.isArray(parsed.spawns)) {
+          for (const spawnTarget of parsed.spawns) {
+            const targetName = typeof spawnTarget === 'string' ? spawnTarget : (spawnTarget && spawnTarget.agent ? spawnTarget.agent : null);
+            if (targetName && agents[targetName]) {
+              edges.spawns.push({ from: wfName, to: targetName });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Build produces/consumes edges from events
+  for (const [evName, evData] of Object.entries(events)) {
+    for (const producer of evData.producers) {
+      edges.produces.push({ from: producer, to: evName });
+    }
+    for (const consumer of evData.consumers) {
+      edges.consumes.push({ from: consumer, to: evName });
+    }
+  }
+
+  return { agents, events, edges };
+}
+
+// ─── Command: build-graph ─────────────────────────────────────────────────────────────────
+
+function cmdBuildGraph(args) {
+  const designDirIdx = args.indexOf('--design-dir');
+  const designDir = designDirIdx !== -1 ? args[designDirIdx + 1] : '.';
+
+  if (designDirIdx !== -1 && !designDir) {
+    error('--design-dir requires a directory path');
+  }
+
+  const graph = buildGraph(designDir);
+
+  if (graph.error) {
+    process.stderr.write(JSON.stringify({ error: graph.error, searched_paths: graph.searched_paths }, null, 2) + '\n');
+    process.exit(1);
+  }
+
+  output(graph);
+}
+
+// ─── Level 4: detectCycles (in-house DFS) ──────────────────────────────────────────────
+
+/**
+ * Detect cycles in the agent spawning graph using in-house DFS (~35 lines).
+ * Operates ONLY on spawns edges (events don't create cycles).
+ * Returns: { cycles_found, cycles } where each cycle has { cycle: [...], description }.
+ */
+function detectCycles(graph) {
+  // Build adjacency list from agent-to-agent spawning only
+  const adjacency = {};
+  for (const agentName of Object.keys(graph.agents)) {
+    adjacency[agentName] = [];
+  }
+  // Add edges from agents[].spawns (direct agent-to-agent spawn declarations)
+  for (const [agentName, agentData] of Object.entries(graph.agents)) {
+    for (const spawnTarget of (agentData.spawns || [])) {
+      if (graph.agents[spawnTarget]) {
+        if (!adjacency[agentName].includes(spawnTarget)) {
+          adjacency[agentName].push(spawnTarget);
+        }
+      }
+    }
+  }
+  // Also add edges from edges.spawns (agent-to-agent only)
+  for (const edge of graph.edges.spawns) {
+    if (graph.agents[edge.from] && graph.agents[edge.to]) {
+      if (!adjacency[edge.from]) adjacency[edge.from] = [];
+      if (!adjacency[edge.from].includes(edge.to)) {
+        adjacency[edge.from].push(edge.to);
+      }
+    }
+  }
+
+  const visited = new Set();
+  const recursionStack = new Set();
+  const cycles = [];
+
+  function dfs(node, path) {
+    visited.add(node);
+    recursionStack.add(node);
+    path.push(node);
+
+    const neighbors = adjacency[node] || [];
+    for (const neighbor of neighbors) {
+      if (!visited.has(neighbor)) {
+        dfs(neighbor, path);
+      } else if (recursionStack.has(neighbor)) {
+        // Cycle detected: extract cycle path from current path
+        const cycleStart = path.indexOf(neighbor);
+        const cyclePath = [...path.slice(cycleStart), neighbor];
+        cycles.push({
+          cycle: cyclePath,
+          description: `Circular dependency: ${cyclePath.join(' spawns ')}`,
+        });
+      }
+    }
+
+    path.pop();
+    recursionStack.delete(node);
+  }
+
+  for (const node of Object.keys(adjacency)) {
+    if (!visited.has(node)) {
+      dfs(node, []);
+    }
+  }
+
+  return { cycles_found: cycles.length, cycles };
+}
+
+// ─── Command: check-cycles ──────────────────────────────────────────────────────────────────
+
+function cmdCheckCycles(args) {
+  const designDirIdx = args.indexOf('--design-dir');
+  const designDir = designDirIdx !== -1 ? args[designDirIdx + 1] : '.';
+
+  if (designDirIdx !== -1 && !designDir) {
+    error('--design-dir requires a directory path');
+  }
+
+  const graph = buildGraph(designDir);
+
+  if (graph.error) {
+    // Return empty cycles result if events.yaml not found (graceful degradation)
+    output({ cycles_found: 0, cycles: [], note: graph.error });
+    return;
+  }
+
+  output(detectCycles(graph));
+}
+
+// ─── Level 4: findOrphans ────────────────────────────────────────────────────────────────────
+
+/**
+ * Find orphaned agents and events in the graph.
+ * Uses 6-field structured finding format matching VERF-08.
+ * Returns: { findings, total }
+ */
+function findOrphans(graph) {
+  const findings = [];
+
+  // Orphaned agents: in agents/ directory but not referenced_by any workflow
+  for (const [agentName, agentData] of Object.entries(graph.agents)) {
+    if (!agentData.referenced_by || agentData.referenced_by.length === 0) {
+      findings.push({
+        anti_pattern: 'orphaned_agent',
+        severity: 'blocker',
+        file: agentData.file,
+        entity: agentName,
+        detail: `Agent '${agentName}' is not referenced in any workflow file`,
+        remediation: `Add agent '${agentName}' to a workflow file in workflows/ to establish its place in the execution graph`,
+      });
+    }
+  }
+
+  // Orphaned events: events with no producer
+  for (const [evName, evData] of Object.entries(graph.events)) {
+    if (!evData.producers || evData.producers.length === 0) {
+      findings.push({
+        anti_pattern: 'orphaned_event_no_producer',
+        severity: 'blocker',
+        file: evData.file,
+        entity: evName,
+        detail: `Event '${evName}' defined in events.yaml has no producer (no agent dispatches it)`,
+        remediation: `Ensure at least one agent spec has '${evName}' in its dispatches: array`,
+      });
+    }
+  }
+
+  // Orphaned events: events with no consumer
+  for (const [evName, evData] of Object.entries(graph.events)) {
+    if (!evData.consumers || evData.consumers.length === 0) {
+      findings.push({
+        anti_pattern: 'orphaned_event_no_consumer',
+        severity: 'blocker',
+        file: evData.file,
+        entity: evName,
+        detail: `Event '${evName}' defined in events.yaml has no consumer (no agent subscribes to it)`,
+        remediation: `Ensure at least one agent spec has '${evName}' in its subscribes: array`,
+      });
+    }
+  }
+
+  return { findings, total: findings.length };
+}
+
+// ─── Command: find-orphans ───────────────────────────────────────────────────────────────────
+
+function cmdFindOrphans(args) {
+  const designDirIdx = args.indexOf('--design-dir');
+  const designDir = designDirIdx !== -1 ? args[designDirIdx + 1] : '.';
+
+  if (designDirIdx !== -1 && !designDir) {
+    error('--design-dir requires a directory path');
+  }
+
+  const graph = buildGraph(designDir);
+
+  if (graph.error) {
+    output({ findings: [], total: 0, note: graph.error });
+    return;
+  }
+
+  output(findOrphans(graph));
+}
+
+// ─── Command: verify level4 ────────────────────────────────────────────────────────────
+
+/**
+ * Run all Level 4 checks:
+ * 4a: event_resolves    -- all event names in agent specs exist in events.yaml
+ * 4b: agent_resolves    -- all agent names in workflow files match agents/ files
+ * 4c: no_cycles         -- no circular agent spawning dependencies
+ * 4d: no_orphans        -- no orphaned events or agents
+ * 4e: name_matches_file -- agent frontmatter name: matches filename
+ *
+ * Returns { status, level, findings, graph_stats }
+ */
+function verifyLevel4(designDir) {
+  const resolvedDir = path.resolve(designDir);
+  const findings = [];
+
+  // Build the graph once -- all checks query it
+  const graph = buildGraph(designDir);
+
+  const graphStats = {
+    agents: 0,
+    events: 0,
+    edges: 0,
+  };
+
+  if (graph.error) {
+    // events.yaml missing: skip 4a and 4d event checks, run others
+    findings.push({
+      check: 'event_resolves',
+      result: 'skip',
+      detail: `events.yaml not found — skipping event name resolution checks. ${graph.error}`,
+      file: resolvedDir,
+    });
+  } else {
+    graphStats.agents = Object.keys(graph.agents).length;
+    graphStats.events = Object.keys(graph.events).length;
+    graphStats.edges = graph.edges.spawns.length + graph.edges.produces.length + graph.edges.consumes.length;
+
+    // ── Check 4a: event_resolves ────────────────────────────────────────────────────
+    // Every event name referenced in agent spec dispatches/subscribes must exist in events.yaml
+    const eventNames = new Set(Object.keys(graph.events));
+    const unresolvedEvents = [];
+
+    for (const [agentName, agentData] of Object.entries(graph.agents)) {
+      for (const evRef of [...(agentData.dispatches || []), ...(agentData.subscribes || [])]) {
+        if (!eventNames.has(evRef)) {
+          unresolvedEvents.push({ agent: agentName, event: evRef, file: agentData.file });
+        }
+      }
+    }
+
+    if (unresolvedEvents.length === 0) {
+      findings.push({
+        check: 'event_resolves',
+        result: 'pass',
+        detail: `All event references in agent specs resolve against events.yaml (${eventNames.size} events checked)`,
+      });
+    } else {
+      for (const unresolved of unresolvedEvents) {
+        findings.push({
+          check: 'event_resolves',
+          result: 'fail',
+          detail: `Event '${unresolved.event}' referenced in ${unresolved.agent} but not found in events.yaml`,
+          file: unresolved.file,
+          unresolved: unresolved.event,
+        });
+      }
+    }
+
+    // ── Check 4d: no_orphans ─────────────────────────────────────────────────────────────
+    const orphanResult = findOrphans(graph);
+    if (orphanResult.total === 0) {
+      findings.push({
+        check: 'no_orphans',
+        result: 'pass',
+        detail: 'No orphaned agents or events found',
+      });
+    } else {
+      for (const orphan of orphanResult.findings) {
+        findings.push({
+          check: 'no_orphans',
+          result: 'fail',
+          detail: orphan.detail,
+          file: orphan.file,
+          unresolved: orphan.entity,
+        });
+      }
+    }
+  }
+
+  // ── Check 4b: agent_resolves ─────────────────────────────────────────────────────
+  // Every agent name referenced in workflow files must match agents/{name}.md
+  const agentsDir = path.join(resolvedDir, 'agents');
+  const workflowsDir = path.join(resolvedDir, 'workflows');
+  const unresolvedAgents = [];
+
+  if (fs.existsSync(workflowsDir) && fs.existsSync(agentsDir)) {
+    const agentFiles = findMarkdownFiles(agentsDir);
+    const agentNames = new Set(agentFiles.map(f => path.basename(f, '.md')));
+    const workflowFiles = findMarkdownFiles(workflowsDir);
+
+    for (const wfFile of workflowFiles) {
+      const wfContent = safeReadFile(wfFile);
+      if (!wfContent) continue;
+
+      // Extract agent references: agents/{name}.md patterns
+      const agentRefMatches = wfContent.match(/agents\/([a-z][a-z0-9-]*)\.md/g) || [];
+      for (const ref of agentRefMatches) {
+        const refName = ref.replace('agents/', '').replace('.md', '');
+        if (!agentNames.has(refName)) {
+          unresolvedAgents.push({ workflow: path.basename(wfFile, '.md'), agent: refName, file: wfFile });
+        }
+      }
+    }
+  }
+
+  if (unresolvedAgents.length === 0) {
+    findings.push({
+      check: 'agent_resolves',
+      result: 'pass',
+      detail: 'All agent references in workflow files resolve to existing agent specs',
+    });
+  } else {
+    for (const unresolved of unresolvedAgents) {
+      findings.push({
+        check: 'agent_resolves',
+        result: 'fail',
+        detail: `Agent '${unresolved.agent}' referenced in workflow '${unresolved.workflow}' but agents/${unresolved.agent}.md does not exist`,
+        file: unresolved.file,
+        unresolved: unresolved.agent,
+      });
+    }
+  }
+
+  // ── Check 4c: no_cycles ─────────────────────────────────────────────────────────────────
+  if (!graph.error) {
+    const cycleResult = detectCycles(graph);
+    if (cycleResult.cycles_found === 0) {
+      findings.push({
+        check: 'no_cycles',
+        result: 'pass',
+        detail: 'No circular agent spawning dependencies detected',
+      });
+    } else {
+      for (const cycle of cycleResult.cycles) {
+        findings.push({
+          check: 'no_cycles',
+          result: 'fail',
+          detail: cycle.description,
+          unresolved: cycle.cycle.join(' -> '),
+        });
+      }
+    }
+  } else {
+    findings.push({
+      check: 'no_cycles',
+      result: 'skip',
+      detail: 'Skipping cycle detection — graph could not be built (events.yaml missing)',
+    });
+  }
+
+  // ── Check 4e: name_matches_file ──────────────────────────────────────────────────────────
+  const agentsDirForNameCheck = path.join(resolvedDir, 'agents');
+  const nameMismatchFindings = [];
+
+  if (fs.existsSync(agentsDirForNameCheck)) {
+    const agentFiles = findMarkdownFiles(agentsDirForNameCheck);
+
+    for (const agentFile of agentFiles) {
+      const agentContent = safeReadFile(agentFile);
+      if (!agentContent) continue;
+
+      const fm = extractFrontmatter(agentContent);
+      const frontmatterName = fm.name;
+      const fileBaseName = path.basename(agentFile, '.md');
+
+      if (!frontmatterName) {
+        nameMismatchFindings.push({
+          check: 'name_matches_file',
+          result: 'fail',
+          detail: `Agent spec ${fileBaseName}.md is missing 'name:' in frontmatter`,
+          file: agentFile,
+          unresolved: fileBaseName,
+        });
+      } else if (String(frontmatterName) !== fileBaseName) {
+        nameMismatchFindings.push({
+          check: 'name_matches_file',
+          result: 'fail',
+          detail: `Agent spec ${fileBaseName}.md has frontmatter name '${frontmatterName}' but file is named '${fileBaseName}.md' — these must match`,
+          file: agentFile,
+          unresolved: frontmatterName,
+        });
+      }
+    }
+  }
+
+  if (nameMismatchFindings.length === 0) {
+    findings.push({
+      check: 'name_matches_file',
+      result: 'pass',
+      detail: 'All agent spec frontmatter name: fields match their filenames',
+    });
+  } else {
+    findings.push(...nameMismatchFindings);
+  }
+
+  const anyFail = findings.some(f => f.result === 'fail');
+  return {
+    status: anyFail ? 'gaps_found' : 'passed',
+    level: 4,
+    findings,
+    graph_stats: graphStats,
+  };
+}
+
+function cmdVerifyLevel4(args) {
+  const designDirIdx = args.indexOf('--design-dir');
+  const designDir = designDirIdx !== -1 ? args[designDirIdx + 1] : '.';
+
+  if (designDirIdx !== -1 && !designDir) {
+    error('--design-dir requires a directory path');
+  }
+
+  output(verifyLevel4(designDir));
 }
 
 // ─── Command: scan-antipatterns ───────────────────────────────────────────────
@@ -1933,12 +2611,25 @@ switch (command) {
       case 'level1': cmdVerifyLevel1(subSubArgs); break;
       case 'level2': cmdVerifyLevel2(subSubArgs); break;
       case 'level3': cmdVerifyLevel3(subSubArgs); break;
+      case 'level4': cmdVerifyLevel4(subSubArgs); break;
       case 'run':    cmdVerifyRun(subSubArgs); break;
       default:
-        error(`Unknown verify sub-command: ${sub}. Use: level1, level2, level3, run`);
+        error(`Unknown verify sub-command: ${sub}. Use: level1, level2, level3, level4, run`);
     }
     break;
   }
+
+  case 'build-graph':
+    cmdBuildGraph(subArgs);
+    break;
+
+  case 'check-cycles':
+    cmdCheckCycles(subArgs);
+    break;
+
+  case 'find-orphans':
+    cmdFindOrphans(subArgs);
+    break;
 
   case 'scan-antipatterns':
     cmdScanAntiPatterns(subArgs);
