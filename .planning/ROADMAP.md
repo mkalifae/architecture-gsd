@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Intake and Intent Extraction** - Build the discuss-system agent and /arch-gsd:new-system workflow so a human can describe a system in natural language and receive a structured, non-prose CONTEXT.md with explicit fields and mandatory non-goals
 - [ ] **Phase 3: Core Design Pipeline** - Implement the researcher → roadmapper → planner → checker → executor chain plus all three specialized agents (context-engineer, schema-designer, failure-analyst), the /arch-gsd:execute-phase workflow, wave-based parallelization, and all primary output documents
 - [x] **Phase 4: Verification, Integration, and Quality Gates** - Complete arch-verifier and arch-integrator, the full arch-tools.js verification engine with YAML graph traversal, all four verification levels, phase-boundary digests, INTEGRATION-REPORT.md, and MANIFEST.md
-- [ ] **Phase 5: Self-Design Validation and CLI Polish** - Run Architecture GSD against itself to validate the complete pipeline end-to-end, confirm the output is sufficient for re-implementation from scratch, establish self-design convergence criteria, and add the /arch-gsd:resume and /arch-gsd:progress workflows
+- [x] **Phase 5: Self-Design Validation and CLI Polish** - Run Architecture GSD against itself to validate the complete pipeline end-to-end, confirm the output is sufficient for re-implementation from scratch, establish self-design convergence criteria, and add the /arch-gsd:resume and /arch-gsd:progress workflows
 
 ## Phase Details
 
@@ -139,9 +139,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — /arch-gsd:resume and /arch-gsd:progress workflow implementation (STAT-05)
-- [ ] 05-02-PLAN.md — VALD-01: full pipeline run on Code Review Automation Pipeline (6-agent external system)
-- [ ] 05-03-PLAN.md — VALD-02/03/04: self-design run on Architecture GSD itself with convergence criteria, DEFERRED.md, REVIEW-CHECKLIST.md
+- [x] 05-01-PLAN.md — /arch-gsd:resume and /arch-gsd:progress workflow implementation (STAT-05)
+- [x] 05-02-PLAN.md — VALD-01: full pipeline run on Code Review Automation Pipeline (6-agent external system)
+- [x] 05-03-PLAN.md — VALD-02/03/04: self-design run on Architecture GSD itself with convergence criteria, DEFERRED.md, REVIEW-CHECKLIST.md
 
 ---
 
@@ -156,7 +156,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Intake and Intent Extraction | 2/2 | ✓ Complete | 2026-02-28 |
 | 3. Core Design Pipeline | 6/6 | ✓ Complete | 2026-03-02 |
 | 4. Verification, Integration, and Quality Gates | 5/5 | ✓ Complete | 2026-03-02 |
-| 5. Self-Design Validation and CLI Polish | 0/3 | Not started | - |
+| 5. Self-Design Validation and CLI Polish | 3/3 | ✓ Complete | 2026-03-02 |
 
 ---
 *Roadmap created: 2026-02-27*
