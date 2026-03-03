@@ -1,7 +1,7 @@
 ---
 name: arch-verifier
 description: Runs the four-level verification stack (exists, substantive, cross-referenced, internally consistent) against completed architecture documents and produces a structured VERIFICATION.md with pass/fail status and remediation suggestions.
-tools: Read, Bash, Grep, Glob
+tools: Read, Write, Bash, Grep, Glob
 model: sonnet
 color: orange
 ---
