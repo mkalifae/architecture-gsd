@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-03)
 
 **Core value:** Agent tool assignments follow principled permission boundaries
-**Current focus:** Phase 3 — Workflow Simplification
+**Current focus:** Phase 4 — New Agents
 
 ## Current Position
 
-Phase: 3 of 4 (Workflow Restructure) ✓ COMPLETE — VERIFIED
+Phase: 4 of 4 (New Agents) ✓ COMPLETE
 Plan: 1/1 complete
-Status: Phase 3 verified and complete
-Last activity: 2026-03-03 — Phase 3 verified: 3/3 must-haves passed
+Status: Phase 4 complete
+Last activity: 2026-03-03 — Phase 4 Plan 1 executed: arch-debugger and system-analyzer created
 
-Progress: [███████░░░] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: ~1.3 min
-- Total execution time: ~4 min
+- Total plans completed: 4
+- Average duration: ~2.3 min
+- Total execution time: ~9 min
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [███████░░░] 75%
 | 01-permission-boundaries | 1 | ~1 min | ~1 min |
 | 02-internet-access | 1 | ~1 min | ~1 min |
 | 03-workflow-restructure | 1 | ~2 min | ~2 min |
+| 04-new-agents | 1 | ~5 min | ~5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (~1 min), 02-01 (~1 min), 03-01 (~2 min)
+- Last 5 plans: 01-01 (~1 min), 02-01 (~1 min), 03-01 (~2 min), 04-01 (~5 min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -54,6 +55,9 @@ Recent decisions affecting current work:
 - [02-01] Internet tool ordering: appended after Glob in frontmatter (WebFetch, WebSearch, Context7), maintaining core-tools-first convention
 - [03-01] new-system owns full pipeline: single command produces CONTEXT.md, RESEARCH.md, ROADMAP.md, STATE.md — plan-phase is a pure planner
 - [03-01] Skip-if-exists pattern in new-system Steps 5-6 enables idempotent re-runs after partial failures
+- [Phase 04-new-agents]: arch-debugger defers LOW-confidence fixes to human rather than apply speculative changes
+- [Phase 04-new-agents]: system-analyzer is read-only (no Edit tool) — writes only .arch/ANALYSIS.md
+- [Phase 04-new-agents]: system-analyzer returns failed status when no artifacts found (greenfield redirect to discuss-system)
 
 ### Pending Todos
 
@@ -66,5 +70,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-03
-Stopped at: Phase 3 complete and verified. Ready to plan Phase 4.
+Stopped at: Completed 04-new-agents-01-PLAN.md — Phase 4 complete.
 Resume file: None
