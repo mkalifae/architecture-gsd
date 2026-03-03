@@ -1,7 +1,7 @@
 ---
 name: arch-roadmapper
 description: Derives the design phases and their dependency order from the system intent in CONTEXT.md, producing a phased roadmap with wave assignments that the planner executes against.
-tools: Read, Write, Edit, Bash, Grep, Glob
+tools: Read, Write, Bash, Grep, Glob
 model: opus
 color: green
 ---
