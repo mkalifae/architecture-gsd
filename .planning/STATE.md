@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-03-03)
 
 ## Current Position
 
-Phase: 2 of 4 (Internet Access) ✓ COMPLETE — VERIFIED
+Phase: 3 of 4 (Workflow Restructure) — IN PROGRESS
 Plan: 1/1 complete
-Status: Phase 2 verified and complete
-Last activity: 2026-03-03 — Phase 2 verified: 4/4 must-haves passed
+Status: Phase 3 Plan 1 complete — WKFL-01, WKFL-02, WKFL-03 satisfied
+Last activity: 2026-03-03 — new-system extended with researcher/roadmapper pipeline; plan-phase simplified
 
-Progress: [████░░░░░░] 50%
+Progress: [██████░░░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: ~1 min
-- Total execution time: ~2 min
+- Total plans completed: 3
+- Average duration: ~1.3 min
+- Total execution time: ~4 min
 
 **By Phase:**
 
@@ -29,9 +29,10 @@ Progress: [████░░░░░░] 50%
 |-------|-------|-------|----------|
 | 01-permission-boundaries | 1 | ~1 min | ~1 min |
 | 02-internet-access | 1 | ~1 min | ~1 min |
+| 03-workflow-restructure | 1 | ~2 min | ~2 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (~1 min), 02-01 (~1 min)
+- Last 5 plans: 01-01 (~1 min), 02-01 (~1 min), 03-01 (~2 min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -51,6 +52,8 @@ Recent decisions affecting current work:
 - [02-01] arch-researcher frontmatter-body consistency: body referenced Context7 in Steps 4-5; adding it to frontmatter resolved the inconsistency without touching the body
 - [02-01] arch-planner body not modified: internet tools become available by listing in frontmatter; body instructions are tool-agnostic
 - [02-01] Internet tool ordering: appended after Glob in frontmatter (WebFetch, WebSearch, Context7), maintaining core-tools-first convention
+- [03-01] new-system owns full pipeline: single command produces CONTEXT.md, RESEARCH.md, ROADMAP.md, STATE.md — plan-phase is a pure planner
+- [03-01] Skip-if-exists pattern in new-system Steps 5-6 enables idempotent re-runs after partial failures
 
 ### Pending Todos
 
@@ -58,10 +61,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- WKFL-03 (plan-phase simplification) depends on PERM-05 landing in Phase 1 first; do not execute Phase 3 before Phase 1 is complete
+None.
 
 ## Session Continuity
 
 Last session: 2026-03-03
-Stopped at: Phase 2 complete and verified. Ready to plan Phase 3.
+Stopped at: Phase 3 Plan 1 complete — workflow restructure done.
 Resume file: None
