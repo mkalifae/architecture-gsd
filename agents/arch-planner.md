@@ -1,7 +1,7 @@
 ---
 name: arch-planner
 description: Breaks each design phase into concrete implementation tasks with wave assignments and dependency ordering, producing PLAN.md files that arch-executor executes against after arch-checker approval.
-tools: Read, Write, Edit, Bash, Grep, Glob
+tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, Context7
 model: sonnet
 color: yellow
 ---
