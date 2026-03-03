@@ -6,8 +6,8 @@ argument-hint: "[phase-number]"
 
 <purpose>
 Plan a design phase of AAA. Given a phase number, coordinate the planning
-pipeline: run arch-researcher (if no RESEARCH.md exists), run arch-roadmapper (if no
-ROADMAP.md exists), enter the arch-planner + arch-checker bounded revision loop (max 3
+pipeline: verify prerequisites exist (RESEARCH.md, ROADMAP.md from /AAA:new-system),
+enter the arch-planner + arch-checker bounded revision loop (max 3
 iterations), then update STATE.md with planning completion. This workflow produces PLAN.md
 files that `/AAA:execute-phase N` consumes.
 
@@ -49,44 +49,21 @@ Validate both files exist:
 
 ## Step 2: Check Prerequisites
 
-**Check for RESEARCH.md:**
+Verify that the initialization pipeline has been run:
 
   Bash: ls .arch/RESEARCH.md 2>/dev/null && echo "exists" || echo "missing"
 
 If missing:
-  Display: "No RESEARCH.md found — spawning arch-researcher..."
-
-  Spawn arch-researcher via Task():
-    model: "sonnet"
-    prompt: |
-      Read agents/arch-researcher.md for your complete execution instructions.
-      System context file: .arch/CONTEXT.md
-      Produce output file: .arch/RESEARCH.md
-      Follow your execution_flow exactly and return structured status JSON.
-
-  Wait for completion. Parse return. If status is "failed": display the error message and
-  stop execution.
-
-**Check for ROADMAP.md:**
+  Display: "No RESEARCH.md found. Run /AAA:new-system first — it produces CONTEXT.md, RESEARCH.md, and ROADMAP.md as part of the initialization pipeline."
+  Stop.
 
   Bash: ls .arch/ROADMAP.md 2>/dev/null && echo "exists" || echo "missing"
 
 If missing:
-  Display: "No ROADMAP.md found — spawning arch-roadmapper..."
+  Display: "No ROADMAP.md found. Run /AAA:new-system first — it produces CONTEXT.md, RESEARCH.md, and ROADMAP.md as part of the initialization pipeline."
+  Stop.
 
-  Spawn arch-roadmapper via Task():
-    model: "opus"
-    prompt: |
-      Read agents/arch-roadmapper.md for your complete execution instructions.
-      System context file: .arch/CONTEXT.md
-      Research file: .arch/RESEARCH.md
-      Produce output file: .arch/ROADMAP.md
-      Follow your execution_flow exactly and return structured status JSON.
-
-  Wait for completion. Parse return. If status is "failed": display the error message and
-  stop execution.
-
-If both RESEARCH.md and ROADMAP.md already exist, skip this step entirely.
+Both prerequisites confirmed. Continue to Step 3.
 
 ## Step 3: Locate Phase in Roadmap
 
@@ -300,8 +277,8 @@ Also available:
 <success_criteria>
 
 - [ ] .arch/STATE.md and .arch/CONTEXT.md validated to exist
-- [ ] RESEARCH.md produced (or already existed)
-- [ ] ROADMAP.md produced (or already existed)
+- [ ] RESEARCH.md verified to exist (produced by /AAA:new-system)
+- [ ] ROADMAP.md verified to exist (produced by /AAA:new-system)
 - [ ] Phase located in ROADMAP.md with goal and artifact list extracted
 - [ ] Phase directory created
 - [ ] Existing plans checked — human offered replan/skip/view if plans exist
