@@ -70,10 +70,10 @@ Plans:
   2. agents/system-analyzer.md exists with tools: Read, Write, Bash, Grep, Glob — role focuses on reading existing architecture documents/specs to inform new designs
   3. Both new agent specs follow the existing YAML frontmatter + XML sections format
   4. Both files are included in the npm package install manifest
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md — Create arch-debugger and system-analyzer agent specs; register in install manifest
 
 ## Progress
 
@@ -85,4 +85,4 @@ Phases execute in order: 1 -> 2 -> 3 -> 4
 | 1. Permission Boundaries | 1/1 | ✓ Complete | 2026-03-03 |
 | 2. Internet Access | 1/1 | ✓ Complete | 2026-03-03 |
 | 3. Workflow Restructure | 1/1 | ✓ Complete | 2026-03-03 |
-| 4. New Agents | 0/TBD | Not started | - |
+| 4. New Agents | 0/1 | Not started | - |
