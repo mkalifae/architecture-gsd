@@ -13,7 +13,7 @@ Close all 8 gaps identified in the GSD comparison analysis. Align agent tool ass
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Permission Boundaries** - Enforce write-once pattern for roadmapper, add Write to verifier and researcher (3 agents)
-- [ ] **Phase 2: Internet Access** - Add WebSearch, Context7, and WebFetch to arch-researcher and arch-planner
+- [x] **Phase 2: Internet Access** - Add WebSearch, Context7, and WebFetch to arch-researcher and arch-planner
 - [ ] **Phase 3: Workflow Restructure** - Extend new-system to run full initialization pipeline; simplify plan-phase
 - [ ] **Phase 4: New Agents** - Create arch-debugger and system-analyzer agent spec files
 
@@ -46,7 +46,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 02-01-PLAN.md — Add internet tools to arch-researcher (WebSearch, Context7) and arch-planner (WebFetch, Context7)
+- [x] 02-01-PLAN.md — Add internet tools to arch-researcher (WebSearch, Context7) and arch-planner (WebFetch, Context7)
 
 ### Phase 3: Workflow Restructure
 **Goal**: Running `/AAA:new-system` produces CONTEXT.md, RESEARCH.md, and ROADMAP.md before the user reaches plan-phase
@@ -83,6 +83,6 @@ Phases execute in order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Permission Boundaries | 1/1 | ✓ Complete | 2026-03-03 |
-| 2. Internet Access | 0/1 | Planning complete | - |
+| 2. Internet Access | 1/1 | ✓ Complete | 2026-03-03 |
 | 3. Workflow Restructure | 0/TBD | Not started | - |
 | 4. New Agents | 0/TBD | Not started | - |

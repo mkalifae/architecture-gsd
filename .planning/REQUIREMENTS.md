@@ -9,10 +9,10 @@ Requirements for GSD tool parity. Each maps to roadmap phases.
 
 ### Internet Access
 
-- [ ] **INET-01**: arch-researcher can search the web via WebSearch for architecture patterns and case studies
-- [ ] **INET-02**: arch-researcher can query Context7 for framework and library documentation
-- [ ] **INET-03**: arch-planner can fetch documentation via WebFetch when decomposing phases into tasks
-- [ ] **INET-04**: arch-planner can query Context7 for library-specific documentation during planning
+- [x] **INET-01**: arch-researcher can search the web via WebSearch for architecture patterns and case studies
+- [x] **INET-02**: arch-researcher can query Context7 for framework and library documentation
+- [x] **INET-03**: arch-planner can fetch documentation via WebFetch when decomposing phases into tasks
+- [x] **INET-04**: arch-planner can query Context7 for library-specific documentation during planning
 
 ### Permission Boundaries
 
@@ -63,10 +63,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INET-01 | Phase 2 | Pending |
-| INET-02 | Phase 2 | Pending |
-| INET-03 | Phase 2 | Pending |
-| INET-04 | Phase 2 | Pending |
+| INET-01 | Phase 2 | ✓ Done |
+| INET-02 | Phase 2 | ✓ Done |
+| INET-03 | Phase 2 | ✓ Done |
+| INET-04 | Phase 2 | ✓ Done |
 | PERM-02 | Phase 1 | ✓ Done |
 | PERM-04 | Phase 1 | ✓ Done |
 | PERM-05 | Phase 1 | ✓ Done |
