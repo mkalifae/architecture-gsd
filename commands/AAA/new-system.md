@@ -26,11 +26,11 @@ Use the human's response as the system description going forward in the workflow
 
   1. Update it — re-run discuss-system with existing CONTEXT.md as the starting point. Useful when the system description has changed or you want to refine intake answers.
   2. View it — display the current CONTEXT.md contents, then offer the update/skip choice.
-  3. Skip — use the existing CONTEXT.md as-is and jump directly to STATE.md initialization (Step 5). Use this if CONTEXT.md is already complete and validated."
+  3. Skip — use the existing CONTEXT.md as-is and jump directly to STATE.md initialization (Step 7). Use this if CONTEXT.md is already complete and validated."
 
   - If "Update it": continue to Step 2, discuss-system will load .arch/CONTEXT.md in update mode.
   - If "View it": Read .arch/CONTEXT.md and display it in full, then present the Update/Skip choice again. Follow the human's second selection.
-  - If "Skip": jump directly to Step 5.
+  - If "Skip": jump directly to Step 7.
 
 ## Step 2: Scaffold Project Directory
 
@@ -38,7 +38,7 @@ Create the .arch/ directory if it does not already exist:
 
   Bash: mkdir -p .arch
 
-No other initialization is needed at this step. STATE.md is written by new-system.md in Step 5 using the Write tool — not by any arch-tools.js command. The .arch/ directory structure is flat: CONTEXT.md and STATE.md are the only two files at this stage.
+No other initialization is needed at this step. STATE.md is written by new-system.md in Step 7 using the Write tool — not by any arch-tools.js command. The .arch/ directory structure is flat: CONTEXT.md and STATE.md are the only two files at this stage.
 
 ## Step 3: Spawn discuss-system
 
@@ -99,7 +99,54 @@ Parse the structured JSON return from discuss-system. Three return statuses are 
 
   Stop. Do not proceed to Step 5.
 
-## Step 5: Initialize STATE.md
+## Step 5: Spawn arch-researcher
+
+Check if RESEARCH.md already exists:
+  Bash: ls .arch/RESEARCH.md 2>/dev/null && echo "exists" || echo "missing"
+
+If exists: Display "RESEARCH.md already exists — skipping arch-researcher." and continue to Step 6.
+
+Display: "Spawning arch-researcher to analyze system context and produce RESEARCH.md..."
+
+Spawn arch-researcher via Task():
+  model: "sonnet"
+  prompt: |
+    Read agents/arch-researcher.md for your complete execution instructions.
+    System context file: .arch/CONTEXT.md
+    Produce output file: .arch/RESEARCH.md
+    Follow your execution_flow exactly and return structured status JSON.
+
+Wait for completion. Parse return.
+
+If status is "failed": display "arch-researcher failed: [error message]. RESEARCH.md was not produced. You can re-run /AAA:new-system to retry (it will skip intake since CONTEXT.md exists)." and stop. Do not proceed to Step 6.
+
+If status is "complete": continue to Step 6.
+
+## Step 6: Spawn arch-roadmapper
+
+Check if ROADMAP.md already exists:
+  Bash: ls .arch/ROADMAP.md 2>/dev/null && echo "exists" || echo "missing"
+
+If exists: Display "ROADMAP.md already exists — skipping arch-roadmapper." and continue to Step 7.
+
+Display: "Spawning arch-roadmapper to create design roadmap from research findings..."
+
+Spawn arch-roadmapper via Task():
+  model: "opus"
+  prompt: |
+    Read agents/arch-roadmapper.md for your complete execution instructions.
+    System context file: .arch/CONTEXT.md
+    Research file: .arch/RESEARCH.md
+    Produce output file: .arch/ROADMAP.md
+    Follow your execution_flow exactly and return structured status JSON.
+
+Wait for completion. Parse return.
+
+If status is "failed": display "arch-roadmapper failed: [error message]. ROADMAP.md was not produced. You can re-run /AAA:new-system to retry (it will skip intake since CONTEXT.md exists)." and stop. Do not proceed to Step 7.
+
+If status is "complete": continue to Step 7.
+
+## Step 7: Initialize STATE.md
 
 Read the locked-decisions field from CONTEXT.md:
 
@@ -160,11 +207,11 @@ Resume with: /AAA:plan-phase 1 (after /clear for fresh context)
 
 CRITICAL: STATE.md is an index document, not a copy of CONTEXT.md. Full content (actors, non-goals, constraints, scale) lives in CONTEXT.md. STATE.md must NOT duplicate CONTEXT.md content — it records position, decisions, and continuity only. Do NOT add extra sections. Do NOT exceed 70 lines.
 
-## Step 6: Confirm and Display Next Steps
+## Step 8: Confirm and Display Next Steps
 
-Commit both files using direct git commands:
+Commit all initialized files using direct git commands:
 
-  Bash: git add .arch/CONTEXT.md .arch/STATE.md && git commit -m "feat: initialize architecture project"
+  Bash: git add .arch/CONTEXT.md .arch/STATE.md .arch/RESEARCH.md .arch/ROADMAP.md && git commit -m "feat: initialize architecture project"
 
 Display confirmation to the human:
 
@@ -172,8 +219,10 @@ Display confirmation to the human:
   AAA -- Project Initialized
 
   System: [domain from CONTEXT.md]
-  Context: .arch/CONTEXT.md (validated)
-  State:   .arch/STATE.md (initialized)
+  Context:  .arch/CONTEXT.md (validated)
+  Research: .arch/RESEARCH.md (produced)
+  Roadmap:  .arch/ROADMAP.md (produced)
+  State:    .arch/STATE.md (initialized)
 
   Locked decisions: [count from discuss-system return] decisions locked at intake
   Non-goals: [count from discuss-system return] explicit non-goals
