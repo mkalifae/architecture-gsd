@@ -24,7 +24,7 @@ Check for STATE.md:
 If STATE.md is missing, display:
 
   "No AAA project found.
-  Run /AAA:new-system first to initialize a project."
+  Run `/AAA:new-system` first to initialize a project."
 
 And stop.
 
@@ -35,7 +35,7 @@ Check for ROADMAP.md:
 If STATE.md exists but ROADMAP.md is missing, display partial status from STATE.md
 only and note:
 
-  "ROADMAP.md not yet generated — run /AAA:plan-phase 1 to start the design pipeline."
+  "ROADMAP.md not yet generated — run `/AAA:plan-phase 1` to start the design pipeline."
 
 Continue to Step 2 with ROADMAP.md marked as unavailable.
 
@@ -121,7 +121,7 @@ Concerns:
 
 [If ROADMAP.md missing:]
   ROADMAP.md not yet generated.
-  Run /AAA:plan-phase 1 to start the design pipeline.
+  Run `/AAA:plan-phase 1` to start the design pipeline.
 
 Next recommended command:
   [exact command from "Resume with:" field in STATE.md Session Continuity]

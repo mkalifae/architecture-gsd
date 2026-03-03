@@ -42,9 +42,9 @@ Read .arch/CONTEXT.md (first 20 lines only — frontmatter fields are sufficient
 
 Validate both files exist:
 
-- If .arch/STATE.md does not exist: display "STATE.md not found. Run /AAA:new-system
+- If .arch/STATE.md does not exist: display "STATE.md not found. Run `/AAA:new-system`
   first to initialize the project." and stop.
-- If .arch/CONTEXT.md does not exist: display "No CONTEXT.md found. Run /AAA:new-system
+- If .arch/CONTEXT.md does not exist: display "No CONTEXT.md found. Run `/AAA:new-system`
   first to initialize the project." and stop.
 
 ## Step 2: Check Prerequisites
@@ -54,13 +54,13 @@ Verify that the initialization pipeline has been run:
   Bash: ls .arch/RESEARCH.md 2>/dev/null && echo "exists" || echo "missing"
 
 If missing:
-  Display: "No RESEARCH.md found. Run /AAA:new-system first — it produces CONTEXT.md, RESEARCH.md, and ROADMAP.md as part of the initialization pipeline."
+  Display: "No RESEARCH.md found. Run `/AAA:new-system` first — it produces CONTEXT.md, RESEARCH.md, and ROADMAP.md as part of the initialization pipeline."
   Stop.
 
   Bash: ls .arch/ROADMAP.md 2>/dev/null && echo "exists" || echo "missing"
 
 If missing:
-  Display: "No ROADMAP.md found. Run /AAA:new-system first — it produces CONTEXT.md, RESEARCH.md, and ROADMAP.md as part of the initialization pipeline."
+  Display: "No ROADMAP.md found. Run `/AAA:new-system` first — it produces CONTEXT.md, RESEARCH.md, and ROADMAP.md as part of the initialization pipeline."
   Stop.
 
 Both prerequisites confirmed. Continue to Step 3.
@@ -115,7 +115,7 @@ If PLAN.md files already exist: offer the human a choice via AskUserQuestion:
   - If "Skip": jump to Step 6 with the existing PLAN.md files.
   - If "View": list the plan files, then present the Replan/Skip choice.
 
-Display: "Spawning arch-planner for Phase {N}: {phase_name}..."
+Display: "Spawning **arch-planner** for Phase {N}: {phase_name}..."
 
 Spawn arch-planner via Task():
   model: "sonnet"
@@ -139,7 +139,7 @@ If status is "complete": continue to Step 6 with the list of PLAN.md files creat
 
 ## Step 6: Run arch-checker (Bounded Revision Loop)
 
-Display: "Running arch-checker to validate plans..."
+Display: "Running **arch-checker** to validate plans..."
 
 ```
 iteration = 0
@@ -160,7 +160,7 @@ while iteration < max_iterations:
   Wait for completion. Parse return.
 
   if status == "passed":
-    Display: "Plans approved by arch-checker (iteration {iteration+1})"
+    Display: "Plans approved by **arch-checker** (iteration {iteration+1})"
     Break out of loop — proceed to Step 7.
 
   if status == "issues_found":
@@ -171,7 +171,7 @@ while iteration < max_iterations:
       # ESCALATION — do NOT silently proceed to execution
       Display structured gap report to human:
 
-      "arch-checker found unresolved issues after {max_iterations} revision iterations.
+      "**arch-checker** found unresolved issues after {max_iterations} revision iterations.
       STOPPING — human review required before proceeding.
 
       Unresolved issues:
@@ -185,12 +185,12 @@ while iteration < max_iterations:
       To continue:
         1. Review the flagged PLAN.md files in .arch/phases/{phase-slug}/
         2. Manually fix the issues described above
-        3. Re-run /AAA:plan-phase {N}"
+        3. Re-run `/AAA:plan-phase {N}`"
 
       STOP. Do not proceed to Step 7.
 
     # Not yet at max — re-invoke arch-planner in REVISION MODE
-    Display: "arch-checker found issues (iteration {iteration}/{max_iterations}) — re-running arch-planner in revision mode..."
+    Display: "**arch-checker** found issues (iteration {iteration}/{max_iterations}) — re-running **arch-planner** in revision mode..."
 
     Spawn arch-planner via Task():
       model: "sonnet"
@@ -228,7 +228,7 @@ Update the following sections:
 **Session Continuity:**
   Last session: {YYYY-MM-DD}
   Stopped at: Phase {N} planning complete
-  Resume with: /AAA:execute-phase {N} (after /clear for fresh context)
+  Resume with: `/AAA:execute-phase {N}` (after /clear for fresh context)
 
 **Decisions:** Append any new locked decisions discovered during planning.
 Each entry formatted as:
@@ -265,11 +265,11 @@ Plans produced: {plan_count} in {wave_count} wave(s)
 Research:      {Completed | Used existing | Skipped}
 Verification:  {Passed | Passed with overrides | Max iterations}
 
-Next: /AAA:execute-phase {N} (after /clear for fresh context)
+Next: `/AAA:execute-phase {N}` (after /clear for fresh context)
 
 Also available:
-  cat .arch/phases/{phase-slug}/PLAN*.md — review plans before execution
-  /AAA:plan-phase {N} — replan if changes needed
+  `cat .arch/phases/{phase-slug}/PLAN*.md` — review plans before execution
+  `/AAA:plan-phase {N}` — replan if changes needed
 ```
 
 </process>

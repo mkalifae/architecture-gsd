@@ -24,7 +24,7 @@ Check that the project has been initialized:
 If neither file exists, display:
 
   "No AAA project found.
-  Run /AAA:new-system first to initialize a project."
+  Run `/AAA:new-system` first to initialize a project."
 
 And stop.
 
@@ -120,18 +120,18 @@ If "Resume with:" field is present and non-empty:
     (/clear first for a fresh context window)
 
   Also available:
-    /AAA:progress   — view status without continuing
-    /AAA:verify-phase [N]   — run verification if phase execution is complete
+    `/AAA:progress`   — view status without continuing
+    `/AAA:verify-phase [N]`   — run verification if phase execution is complete
   ```
 
 If "Resume with:" field is missing or empty, fall back to determining next action from
 STATE.md Current Position:
 
-  - If Status is "Phase N planned": suggest /AAA:execute-phase N
-  - If Status is "Phase N complete": suggest /AAA:verify-phase N
-  - If Status is "Phase N verified": suggest /AAA:plan-phase N+1
-  - If Status shows a phase in progress: suggest /AAA:execute-phase N (to continue)
-  - If Status is the initial state (no phase started): suggest /AAA:plan-phase 1
+  - If Status is "Phase N planned": suggest `/AAA:execute-phase N`
+  - If Status is "Phase N complete": suggest `/AAA:verify-phase N`
+  - If Status is "Phase N verified": suggest `/AAA:plan-phase N+1`
+  - If Status shows a phase in progress: suggest `/AAA:execute-phase N` (to continue)
+  - If Status is the initial state (no phase started): suggest `/AAA:plan-phase 1`
 
 Update SESSION CONTINUITY in .arch/STATE.md with the current timestamp to record that
 a resume was performed:

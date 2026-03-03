@@ -41,9 +41,9 @@ Read .arch/CONTEXT.md (first 20 lines only — frontmatter fields are sufficient
 
 Validate both files exist:
 
-- If .arch/STATE.md does not exist: display "STATE.md not found. Run /AAA:new-system
+- If .arch/STATE.md does not exist: display "STATE.md not found. Run `/AAA:new-system`
   first to initialize the project." and stop.
-- If .arch/CONTEXT.md does not exist: display "No CONTEXT.md found. Run /AAA:new-system
+- If .arch/CONTEXT.md does not exist: display "No CONTEXT.md found. Run `/AAA:new-system`
   first to initialize the project." and stop.
 
 ## Step 2: Locate Phase and Validate Plans Exist
@@ -72,7 +72,7 @@ If no PLAN.md files found:
 
   Display:
   "No plans found for Phase {N}: {phase_name}.
-  Run /AAA:plan-phase {N} first to produce PLAN.md files, then re-run /AAA:execute-phase {N}."
+  Run `/AAA:plan-phase {N}` first to produce PLAN.md files, then re-run `/AAA:execute-phase {N}`."
   Stop.
 
 If PLAN.md files exist:
@@ -96,7 +96,7 @@ Group plans by wave number (ascending). Plans with no wave frontmatter field def
 wave 1.
 
 For each wave (in ascending order):
-  Display: "Wave {W}: Executing {count} plans in parallel..."
+  Display: "Wave {W}: Executing {count} plans via **arch-executor** in parallel..."
 
   Spawn one arch-executor agent per plan in this wave, all simultaneously via Task():
   (Do not wait for wave N to complete before spawning wave N tasks — spawn all N tasks at once)
@@ -131,7 +131,7 @@ For each wave (in ascending order):
 
     If status is "human_needed" (deviation Rule 4 — architectural scope change required):
       Display the full error context from the return and STOP.
-      "arch-executor halted on plan {plan_name}: {reason}
+      "**arch-executor** halted on plan {plan_name}: {reason}
       Human decision required before execution can continue.
       {details from return}"
       Stop all further wave execution.
@@ -163,7 +163,7 @@ After all waves complete, collect results:
 
 If any arch-executor returns included auto_flagged items:
   Display:
-  "arch-executor auto-flagged {count} items during execution:
+  "**arch-executor** auto-flagged {count} items during execution:
   {For each item:}
     Plan: {plan_name} — {auto_flag_description}
   These were addressed during execution but warrant review."
@@ -176,7 +176,7 @@ If any plans returned status "gaps_found":
   {For each gap:}
     Plan: {plan_name}
     Gap: {gap_description}
-  Consider running /AAA:execute-phase {N} --gaps to close them."
+  Consider running `/AAA:execute-phase {N} --gaps` to close them."
 
 If no auto-flagged items and no gaps: no deviation report needed.
 
@@ -195,7 +195,7 @@ Update the following sections:
 **Session Continuity:**
   Last session: {YYYY-MM-DD}
   Stopped at: Phase {N} execution complete
-  Resume with: /AAA:verify-phase {N} (after /clear for fresh context)
+  Resume with: `/AAA:verify-phase {N}` (after /clear for fresh context)
 
 **Decisions:** Append any new locked decisions discovered or confirmed during execution.
 Each entry formatted as:
@@ -235,9 +235,9 @@ Gaps detected:
 Failed plans:
   {list plan names with error summaries}
 
-Next: /AAA:verify-phase {N} (after /clear for fresh context)
+Next: `/AAA:verify-phase {N}` (after /clear for fresh context)
 {If gaps:}
-Or: /AAA:execute-phase {N} --gaps to close detected gaps
+Or: `/AAA:execute-phase {N} --gaps` to close detected gaps
 ```
 
 ---

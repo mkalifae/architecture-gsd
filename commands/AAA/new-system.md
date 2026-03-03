@@ -44,7 +44,7 @@ No other initialization is needed at this step. STATE.md is written by new-syste
 
 Display status message to the human:
 
-  "Scaffolding complete. Spawning discuss-system to analyze your system description and conduct structured intake. discuss-system will ask you about any fields it cannot extract from your description before producing .arch/CONTEXT.md."
+  "Scaffolding complete. Spawning **discuss-system** to analyze your system description and conduct structured intake. **discuss-system** will ask you about any fields it cannot extract from your description before producing .arch/CONTEXT.md."
 
 Use Task() to spawn discuss-system as a subagent with the following configuration:
 
@@ -81,11 +81,11 @@ Parse the structured JSON return from discuss-system. Three return statuses are 
 
   Display the reason and partial context path to the human:
 
-  "discuss-system could not produce a valid .arch/CONTEXT.md. Reason: [reason from return JSON]
+  "**discuss-system** could not produce a valid .arch/CONTEXT.md. Reason: [reason from return JSON]
 
   The partial context file is at: [partial_context from return JSON]
 
-  To continue, inspect .arch/CONTEXT.md, correct the structural issues described above, then re-run /AAA:new-system. discuss-system will load the corrected file in update mode."
+  To continue, inspect .arch/CONTEXT.md, correct the structural issues described above, then re-run `/AAA:new-system`. **discuss-system** will load the corrected file in update mode."
 
   Stop. Do not proceed to Step 5.
 
@@ -93,9 +93,9 @@ Parse the structured JSON return from discuss-system. Three return statuses are 
 
   Display the incomplete fields to the human:
 
-  "discuss-system produced a partial .arch/CONTEXT.md — the conversation was incomplete. Fields not collected: [fields_missing from return JSON].
+  "**discuss-system** produced a partial .arch/CONTEXT.md — the conversation was incomplete. Fields not collected: [fields_missing from return JSON].
 
-  Re-run /AAA:new-system to continue. discuss-system will load what was collected and resume from where you left off."
+  Re-run `/AAA:new-system` to continue. **discuss-system** will load what was collected and resume from where you left off."
 
   Stop. Do not proceed to Step 5.
 
@@ -104,9 +104,9 @@ Parse the structured JSON return from discuss-system. Three return statuses are 
 Check if RESEARCH.md already exists:
   Bash: ls .arch/RESEARCH.md 2>/dev/null && echo "exists" || echo "missing"
 
-If exists: Display "RESEARCH.md already exists — skipping arch-researcher." and continue to Step 6.
+If exists: Display "RESEARCH.md already exists — skipping **arch-researcher**." and continue to Step 6.
 
-Display: "Spawning arch-researcher to analyze system context and produce RESEARCH.md..."
+Display: "Spawning **arch-researcher** to analyze system context and produce RESEARCH.md..."
 
 Spawn arch-researcher via Task():
   model: "sonnet"
@@ -118,7 +118,7 @@ Spawn arch-researcher via Task():
 
 Wait for completion. Parse return.
 
-If status is "failed": display "arch-researcher failed: [error message]. RESEARCH.md was not produced. You can re-run /AAA:new-system to retry (it will skip intake since CONTEXT.md exists)." and stop. Do not proceed to Step 6.
+If status is "failed": display "**arch-researcher** failed: [error message]. RESEARCH.md was not produced. You can re-run `/AAA:new-system` to retry (it will skip intake since CONTEXT.md exists)." and stop. Do not proceed to Step 6.
 
 If status is "complete": continue to Step 6.
 
@@ -127,9 +127,9 @@ If status is "complete": continue to Step 6.
 Check if ROADMAP.md already exists:
   Bash: ls .arch/ROADMAP.md 2>/dev/null && echo "exists" || echo "missing"
 
-If exists: Display "ROADMAP.md already exists — skipping arch-roadmapper." and continue to Step 7.
+If exists: Display "ROADMAP.md already exists — skipping **arch-roadmapper**." and continue to Step 7.
 
-Display: "Spawning arch-roadmapper to create design roadmap from research findings..."
+Display: "Spawning **arch-roadmapper** to create design roadmap from research findings..."
 
 Spawn arch-roadmapper via Task():
   model: "opus"
@@ -142,7 +142,7 @@ Spawn arch-roadmapper via Task():
 
 Wait for completion. Parse return.
 
-If status is "failed": display "arch-roadmapper failed: [error message]. ROADMAP.md was not produced. You can re-run /AAA:new-system to retry (it will skip intake since CONTEXT.md exists)." and stop. Do not proceed to Step 7.
+If status is "failed": display "**arch-roadmapper** failed: [error message]. ROADMAP.md was not produced. You can re-run `/AAA:new-system` to retry (it will skip intake since CONTEXT.md exists)." and stop. Do not proceed to Step 7.
 
 If status is "complete": continue to Step 7.
 
@@ -202,7 +202,7 @@ None.
 
 Last session: [YYYY-MM-DD]
 Stopped at: Intake complete
-Resume with: /AAA:plan-phase 1 (after /clear for fresh context)
+Resume with: `/AAA:plan-phase 1` (after /clear for fresh context)
 ```
 
 CRITICAL: STATE.md is an index document, not a copy of CONTEXT.md. Full content (actors, non-goals, constraints, scale) lives in CONTEXT.md. STATE.md must NOT duplicate CONTEXT.md content — it records position, decisions, and continuity only. Do NOT add extra sections. Do NOT exceed 70 lines.
@@ -227,7 +227,7 @@ Display confirmation to the human:
   Locked decisions: [count from discuss-system return] decisions locked at intake
   Non-goals: [count from discuss-system return] explicit non-goals
 
-  Next: /AAA:plan-phase 1 (after /clear for fresh context)
+  Next: `/AAA:plan-phase 1` (after /clear for fresh context)
   ```
 
 </process>

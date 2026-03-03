@@ -40,7 +40,7 @@ Read .arch/STATE.md to understand current project position and accumulated decis
 
 Validate that the requested phase number is valid:
 
-- If .arch/STATE.md does not exist: display "STATE.md not found. Run /AAA:new-system
+- If .arch/STATE.md does not exist: display "STATE.md not found. Run `/AAA:new-system`
   first to initialize the project." and stop.
 
 - Derive the expected phase directory slug by matching the phase number to phases listed
@@ -67,7 +67,7 @@ Check 1 — design/ directory exists and has content:
 
 If design/ directory does not exist or is empty:
   Display:
-  "Phase {N} design documents not found. Run /AAA:execute-phase {N} first.
+  "Phase {N} design documents not found. Run `/AAA:execute-phase {N}` first.
   Expected design directory: .arch/phases/{phase-slug}/design/"
   Stop.
 
@@ -77,7 +77,7 @@ Check 2 — .arch/STATE.md indicates Phase N execution is complete:
 
 If STATE.md shows Phase N as not started or in-progress with no design documents:
   Display:
-  "Phase {N} execution appears incomplete. Run /AAA:execute-phase {N} first to produce
+  "Phase {N} execution appears incomplete. Run `/AAA:execute-phase {N}` first to produce
   design documents before running verification."
   Stop.
 
@@ -86,7 +86,7 @@ If both checks pass, display:
 
 ## Step 3: Spawn arch-verifier — Levels 1-4 + Anti-Pattern Scan
 
-Display: "Spawning arch-verifier for Phase {N}..."
+Display: "Spawning **arch-verifier** for Phase {N}..."
 
 Spawn arch-verifier via Task() with fresh context (do NOT read design documents in
 orchestrator context first):
@@ -126,7 +126,7 @@ Parse the status field from arch-verifier's return JSON.
   Recommended action: {recommended_action from return}
 
   Most likely cause: No design documents found in .arch/phases/{phase-slug}/design/
-  Fix: Run /AAA:execute-phase {N} to produce design documents first."
+  Fix: Run `/AAA:execute-phase {N}` to produce design documents first."
   STOP — do not proceed to arch-integrator.
 
 **If status is "human_needed":**
@@ -146,8 +146,8 @@ Parse the status field from arch-verifier's return JSON.
   To proceed:
     1. Review the findings above in VERIFICATION.md
     2. Make the necessary architectural decisions
-    3. Update the affected design documents via /AAA:execute-phase {N} --correction
-    4. Re-run /AAA:verify-phase {N}"
+    3. Update the affected design documents via `/AAA:execute-phase {N} --correction`
+    4. Re-run `/AAA:verify-phase {N}`"
   STOP — do not proceed to arch-integrator.
 
 **If status is "passed" or "gaps_found":**
@@ -158,7 +158,7 @@ Parse the status field from arch-verifier's return JSON.
 
 ## Step 5: Spawn arch-integrator — Cross-Phase Consistency Checks
 
-Display: "Spawning arch-integrator for Phase {N}..."
+Display: "Spawning **arch-integrator** for Phase {N}..."
 
 Spawn arch-integrator via Task() with fresh context:
 
@@ -218,7 +218,7 @@ Parse the status field from arch-integrator's return JSON.
   To proceed:
     1. Review the findings above in INTEGRATION-REPORT.md
     2. Resolve the circular dependency or cross-phase conflict as directed
-    3. Re-run /AAA:verify-phase {N}"
+    3. Re-run `/AAA:verify-phase {N}`"
   STOP — do not proceed to MANIFEST.md generation.
 
 **If status is "passed" or "gaps_found":**
@@ -345,17 +345,17 @@ Artifacts produced:
 {If arch_verifier_status is "gaps_found":}
 Verification gaps detected ({findings_count}):
   {list gap summaries from VERIFICATION.md}
-  Recommended: Run /AAA:execute-phase {N} in correction mode to close gaps,
-  then re-run /AAA:verify-phase {N}
+  Recommended: Run `/AAA:execute-phase {N}` in correction mode to close gaps,
+  then re-run `/AAA:verify-phase {N}`
 
 {If arch_integrator_status is "gaps_found":}
 Integration gaps detected ({gaps_count}):
   {list gap summaries from INTEGRATION-REPORT.md}
-  Recommended: Resolve cross-phase reference issues, then re-run /AAA:verify-phase {N}
+  Recommended: Resolve cross-phase reference issues, then re-run `/AAA:verify-phase {N}`
 
 {If both are "passed":}
 Phase {N} verification complete. All checks passed.
-Next: /AAA:plan-phase {N+1} (after /clear for fresh context)
+Next: `/AAA:plan-phase {N+1}` (after /clear for fresh context)
 ```
 
 Update .arch/STATE.md with verification completion:
@@ -370,7 +370,7 @@ Read current .arch/STATE.md using the Read tool. Update these sections:
 **Session Continuity:**
   Last session: {YYYY-MM-DD}
   Stopped at: Phase {N} verification complete
-  Resume with: /AAA:plan-phase {N+1} (after /clear for fresh context)
+  Resume with: `/AAA:plan-phase {N+1}` (after /clear for fresh context)
 
 Write the updated .arch/STATE.md using the Write tool.
 
