@@ -1,0 +1,88 @@
+# Roadmap: AAA v1.1 GSD Tool Parity
+
+## Overview
+
+Close all 8 gaps identified in the GSD comparison analysis. Align agent tool assignments with GSD's proven permission boundary patterns, add internet-aware capabilities to researcher and planner agents, fix the new-system initialization workflow, and add two new specialist agents. All changes are markdown-only edits to agent spec files and slash command files.
+
+## Phases
+
+**Phase Numbering:**
+- Integer phases (1, 2, 3): Planned milestone work
+- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+
+Decimal phases appear between their surrounding integers in numeric order.
+
+- [ ] **Phase 1: Permission Boundaries** - Enforce write-once pattern across 5 agents (remove Edit where unneeded, add Write where missing)
+- [ ] **Phase 2: Internet Access** - Add WebSearch, Context7, and WebFetch to arch-researcher and arch-planner
+- [ ] **Phase 3: Workflow Restructure** - Extend new-system to run full initialization pipeline; simplify plan-phase
+- [ ] **Phase 4: New Agents** - Create arch-debugger and system-analyzer agent spec files
+
+## Phase Details
+
+### Phase 1: Permission Boundaries
+**Goal**: Each agent has exactly the file-mutation tools its role requires — no more, no less
+**Depends on**: Nothing (first phase)
+**Requirements**: PERM-01, PERM-02, PERM-03, PERM-04, PERM-05
+**Success Criteria** (what must be TRUE):
+  1. discuss-system agent spec lists Write without Edit in its tools section
+  2. arch-roadmapper agent spec lists Write without Edit in its tools section
+  3. arch-planner agent spec lists Write without Edit in its tools section
+  4. arch-verifier agent spec lists Write in its tools section (previously had none)
+  5. arch-researcher agent spec lists Write in its tools section (previously had none)
+**Plans**: TBD
+
+Plans:
+- [ ] 01-01: TBD
+
+### Phase 2: Internet Access
+**Goal**: arch-researcher and arch-planner can query live documentation and search for architecture patterns
+**Depends on**: Phase 1
+**Requirements**: INET-01, INET-02, INET-03, INET-04
+**Success Criteria** (what must be TRUE):
+  1. arch-researcher agent spec lists WebSearch in its tools section
+  2. arch-researcher agent spec lists Context7 in its tools section
+  3. arch-planner agent spec lists WebFetch in its tools section
+  4. arch-planner agent spec lists Context7 in its tools section
+**Plans**: TBD
+
+Plans:
+- [ ] 02-01: TBD
+
+### Phase 3: Workflow Restructure
+**Goal**: Running `/AAA:new-system` produces CONTEXT.md, RESEARCH.md, and ROADMAP.md before the user reaches plan-phase
+**Depends on**: Phase 1 (arch-researcher needs Write from PERM-05 before new-system can spawn it to write RESEARCH.md)
+**Requirements**: WKFL-01, WKFL-02, WKFL-03
+**Success Criteria** (what must be TRUE):
+  1. `/AAA:new-system` command spec shows arch-researcher spawn step producing RESEARCH.md after intake
+  2. `/AAA:new-system` command spec shows arch-roadmapper spawn step producing ROADMAP.md after research
+  3. `/AAA:plan-phase` command spec assumes RESEARCH.md and ROADMAP.md exist with no fallback spawning logic
+**Plans**: TBD
+
+Plans:
+- [ ] 03-01: TBD
+
+### Phase 4: New Agents
+**Goal**: arch-debugger and system-analyzer agent specs exist and are installable as part of the aaa-cc package
+**Depends on**: Nothing (independent of other phases, sequenced last for logical grouping)
+**Requirements**: AGNT-01, AGNT-02
+**Success Criteria** (what must be TRUE):
+  1. agents/arch-debugger.md exists with tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
+  2. agents/system-analyzer.md exists with tools: Read, Write, Bash, Grep, Glob
+  3. Both new agent specs follow the existing YAML frontmatter + XML sections format
+  4. Both files are included in the npm package install manifest
+**Plans**: TBD
+
+Plans:
+- [ ] 04-01: TBD
+
+## Progress
+
+**Execution Order:**
+Phases execute in order: 1 → 2 → 3 → 4
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Permission Boundaries | 0/TBD | Not started | - |
+| 2. Internet Access | 0/TBD | Not started | - |
+| 3. Workflow Restructure | 0/TBD | Not started | - |
+| 4. New Agents | 0/TBD | Not started | - |

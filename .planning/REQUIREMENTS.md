@@ -63,26 +63,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INET-01 | Pending | Pending |
-| INET-02 | Pending | Pending |
-| INET-03 | Pending | Pending |
-| INET-04 | Pending | Pending |
-| PERM-01 | Pending | Pending |
-| PERM-02 | Pending | Pending |
-| PERM-03 | Pending | Pending |
-| PERM-04 | Pending | Pending |
-| PERM-05 | Pending | Pending |
-| WKFL-01 | Pending | Pending |
-| WKFL-02 | Pending | Pending |
-| WKFL-03 | Pending | Pending |
-| AGNT-01 | Pending | Pending |
-| AGNT-02 | Pending | Pending |
+| INET-01 | Phase 2 | Pending |
+| INET-02 | Phase 2 | Pending |
+| INET-03 | Phase 2 | Pending |
+| INET-04 | Phase 2 | Pending |
+| PERM-01 | Phase 1 | Pending |
+| PERM-02 | Phase 1 | Pending |
+| PERM-03 | Phase 1 | Pending |
+| PERM-04 | Phase 1 | Pending |
+| PERM-05 | Phase 1 | Pending |
+| WKFL-01 | Phase 3 | Pending |
+| WKFL-02 | Phase 3 | Pending |
+| WKFL-03 | Phase 3 | Pending |
+| AGNT-01 | Phase 4 | Pending |
+| AGNT-02 | Phase 4 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14 ⚠️
+- Mapped to phases: 14
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-03*
-*Last updated: 2026-03-03 after GSD comparison analysis*
+*Last updated: 2026-03-02 after roadmap creation*
