@@ -16,9 +16,9 @@ Requirements for GSD tool parity. Each maps to roadmap phases.
 
 ### Permission Boundaries
 
-- [ ] **PERM-02**: arch-roadmapper uses Write without Edit (creates ROADMAP.md, does not modify existing files)
-- [ ] **PERM-04**: arch-verifier has Write without Edit (produces VERIFICATION.md directly)
-- [ ] **PERM-05**: arch-researcher has Write without Edit (produces RESEARCH.md directly)
+- [x] **PERM-02**: arch-roadmapper uses Write without Edit (creates ROADMAP.md, does not modify existing files)
+- [x] **PERM-04**: arch-verifier has Write without Edit (produces VERIFICATION.md directly)
+- [x] **PERM-05**: arch-researcher has Write without Edit (produces RESEARCH.md directly)
 
 > **Dropped:** PERM-01 (discuss-system) and PERM-03 (arch-planner) — these agents legitimately need Edit in AAA's domain. Architecture intake refines CONTEXT.md iteratively; planner iterates with checker in a loop.
 
@@ -67,9 +67,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INET-02 | Phase 2 | Pending |
 | INET-03 | Phase 2 | Pending |
 | INET-04 | Phase 2 | Pending |
-| PERM-02 | Phase 1 | Pending |
-| PERM-04 | Phase 1 | Pending |
-| PERM-05 | Phase 1 | Pending |
+| PERM-02 | Phase 1 | ✓ Done |
+| PERM-04 | Phase 1 | ✓ Done |
+| PERM-05 | Phase 1 | ✓ Done |
 | WKFL-01 | Phase 3 | Pending |
 | WKFL-02 | Phase 3 | Pending |
 | WKFL-03 | Phase 3 | Pending |
