@@ -29,10 +29,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. arch-researcher agent spec lists Write in its tools section (previously had none)
 
 > **Note:** discuss-system and arch-planner retain Edit — architecture intake refines CONTEXT.md iteratively, and planner iterates with checker in a feedback loop. This is a deliberate AAA domain adaptation, not a GSD discrepancy.
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 01-01: TBD
+- [ ] 01-01-PLAN.md — Update tools frontmatter in 3 agent specs (roadmapper, verifier, researcher)
 
 ### Phase 2: Internet Access
 **Goal**: arch-researcher and arch-planner can query live documentation and search for architecture patterns
@@ -78,11 +78,11 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in order: 1 → 2 → 3 → 4
+Phases execute in order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Permission Boundaries | 0/TBD | Not started | - |
+| 1. Permission Boundaries | 0/1 | Planning complete | - |
 | 2. Internet Access | 0/TBD | Not started | - |
 | 3. Workflow Restructure | 0/TBD | Not started | - |
 | 4. New Agents | 0/TBD | Not started | - |
