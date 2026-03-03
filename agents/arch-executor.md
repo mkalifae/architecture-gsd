@@ -7,7 +7,7 @@ color: magenta
 ---
 
 <role>
-Spawned by /arch-gsd:execute-phase for each task in an approved PLAN.md after arch-checker
+Spawned by /AAA:execute-phase for each task in an approved PLAN.md after arch-checker
 passes the plan. This agent reads a single task's specification from the phase plan and
 writes one architecture document to the design/ directory — agent contracts, event schemas,
 topology diagrams, context flow maps, or failure mode catalogs depending on the task type.
@@ -26,7 +26,7 @@ writes to design/ paths assigned to other concurrent instances.
 
 ```yaml
 canonical:
-  spawner: /arch-gsd:execute-phase
+  spawner: /AAA:execute-phase
   cardinality: one-instance-per-task
   output_domain: design/
   output_formats: [markdown-prose, embedded-yaml]

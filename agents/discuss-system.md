@@ -7,7 +7,7 @@ color: blue
 ---
 
 <role>
-Spawned by /arch-gsd:new-system after project directory scaffolding is complete. This agent
+Spawned by /AAA:new-system after project directory scaffolding is complete. This agent
 conducts a structured intake conversation with the human architect to extract the system
 intent, actors, non-goals, constraints, scale parameters, and any pre-made architectural
 decisions — then writes all of that information to .arch/CONTEXT.md with all six required
@@ -29,7 +29,7 @@ The return status "complete" is only issued when validate-context reports valid:
 <upstream_input>
 Required reads at execution start:
 
-- Reads this spec from agents/discuss-system.md — loaded by the /arch-gsd:new-system
+- Reads this spec from agents/discuss-system.md — loaded by the /AAA:new-system
   orchestrator; discuss-system uses its own execution_flow section as the authoritative
   instruction set.
 
@@ -39,10 +39,10 @@ Required reads at execution start:
   their types, validation rules, valid/invalid examples, and mandatory non-empty
   requirements. This is the contract discuss-system produces against.
 
-- Reads the system description argument passed by /arch-gsd:new-system via the Task
+- Reads the system description argument passed by /AAA:new-system via the Task
   prompt — uses the full text as the seed for pre-analysis in Step 3. The argument is
   a natural language description provided by the human architect when invoking
-  /arch-gsd:new-system.
+  /AAA:new-system.
 
 - Reads .arch/CONTEXT.md (if file exists) — uses all six frontmatter fields and body
   sections as starting values for update mode. When CONTEXT.md already exists,
@@ -92,7 +92,7 @@ rules), and the complete example CONTEXT.md. This schema contract is the authori
 field values discuss-system must produce.
 
 Step 2: Read the system description from the Task prompt argument provided by
-/arch-gsd:new-system. Extract the full natural language text the human architect passed when
+/AAA:new-system. Extract the full natural language text the human architect passed when
 invoking the slash command. If .arch/CONTEXT.md exists, also read it now and load its six
 frontmatter field values as the current baseline — this is update mode, not initial intake.
 
@@ -296,11 +296,11 @@ the conversation. The system description alone is insufficient to populate missi
 **Recovery:**
 - Immediate: Write a partial .arch/CONTEXT.md using all field values collected before
   abandonment. For fields with no value, write a YAML comment marker:
-  `# INCOMPLETE — re-run /arch-gsd:new-system to complete this field`. Do not leave
+  `# INCOMPLETE — re-run /AAA:new-system to complete this field`. Do not leave
   fields entirely absent (validate-context would report missing_fields). Populate empty
   required array fields with a single sentinel string: `"INCOMPLETE — see comment above"`.
 - Escalation: Return `{ "status": "partial", "partial_context": ".arch/CONTEXT.md",
-  "fields_missing": [...] }` to new-system.md. The human can re-run /arch-gsd:new-system
+  "fields_missing": [...] }` to new-system.md. The human can re-run /AAA:new-system
   and discuss-system will load the partial CONTEXT.md as its starting point (update mode).
 
 **Detection:** No human response received within the current conversation turn after a
@@ -310,7 +310,7 @@ question is posed. Observable as a missing user turn in the conversation thread.
 
 ### FAILURE-02: System Description Too Vague to Seed Pre-Analysis
 
-**Trigger:** The system description argument passed by /arch-gsd:new-system is fewer than
+**Trigger:** The system description argument passed by /AAA:new-system is fewer than
 20 words, contains no domain signals (no references to agents, events, services, data flow,
 architectural style, technology, or actors), or is entirely generic ("I want to build a
 system").

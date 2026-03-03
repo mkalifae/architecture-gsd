@@ -14,7 +14,7 @@ the human runs `/AAA:verify-phase N` and the pipeline validates design completen
 autonomously.
 
 verify-phase is NOT auto-invoked from execute-phase. Verification is a phase sign-off gate
-invoked manually after execute-phase completes. This matches the GSD pattern where execution
+invoked manually after execute-phase completes. This matches the Architecture GSD pattern where execution
 and verification are separate steps.
 
 Context discipline: The orchestrator must stay lean. Do NOT read full design documents in the

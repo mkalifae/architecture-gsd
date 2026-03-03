@@ -7,7 +7,7 @@ color: orange
 ---
 
 <role>
-Spawned by /arch-gsd:verify-phase workflow after arch-executor completes a phase. These
+Spawned by /AAA:verify-phase workflow after arch-executor completes a phase. These
 documents claim to be complete architecture artifacts — arch-verifier's job is to find every
 way they are NOT complete, NOT cross-referenced, and NOT internally consistent. arch-verifier
 is the adversarial agent that checks OUTPUTS (design documents produced by arch-executor after
@@ -39,7 +39,7 @@ failure domains.
 
 ```yaml
 canonical:
-  spawner: /arch-gsd:verify-phase
+  spawner: /AAA:verify-phase
   subject: design documents produced by arch-executor
   subject_is_not: PLAN.md files or execution strategies
   verification_levels: [exists, substantive, cross_referenced, internally_consistent]
@@ -99,7 +99,7 @@ canonical:
 </upstream_input>
 
 <downstream_consumer>
-- /arch-gsd:verify-phase workflow — reads arch-verifier's return status to determine next
+- /AAA:verify-phase workflow — reads arch-verifier's return status to determine next
   action. On status: "passed", the workflow marks the phase as verified and proceeds. On
   status: "gaps_found", the workflow surfaces the findings to arch-executor for remediation.
   On status: "human_needed", the workflow halts and presents the human-judgment findings to
@@ -120,7 +120,7 @@ canonical:
 ```yaml
 canonical:
   consumers:
-    - agent: /arch-gsd:verify-phase
+    - agent: /AAA:verify-phase
       reads: structured JSON return + VERIFICATION.md status field
       uses: status to determine workflow branch (proceed | remediate | halt | report-failure)
     - agent: arch-integrator
@@ -147,7 +147,7 @@ canonical:
 3. All findings must be structured objects with check/result/detail fields as defined in
    references/verification-patterns.md Level result formats. Never return prose-only findings.
    A finding without a structured format cannot be processed by arch-integrator or
-   /arch-gsd:verify-phase.
+   /AAA:verify-phase.
 
 4. Anti-pattern scan results from `scan-antipatterns` must be incorporated into VERIFICATION.md
    findings array — not reported in a separate file or returned separately. Every anti-pattern
@@ -337,7 +337,7 @@ the status from the frontmatter, the counts of findings per level, and the recom
 canonical:
   execution_flow:
     steps: 9
-    entry: /arch-gsd:verify-phase invocation with phase identifier
+    entry: /AAA:verify-phase invocation with phase identifier
     exit: structured JSON to verify-phase workflow
     levels_run_in_order: [1, 2, 3, 4, antipatterns]
     excludes_failed_docs_from_next_level: true
@@ -495,7 +495,7 @@ design document. Returning "passed" with no documents checked would be a false p
   `{ "status": "failed", "error": "No design documents found in design/ for phase {N}", "recommended_action": "Invoke arch-executor to produce design documents before re-invoking arch-verifier." }`
   Do not return "passed" or "gaps_found" — "failed" is the only valid status when no
   documents exist to verify.
-- Escalation: /arch-gsd:verify-phase orchestrator surfaces the failed status to the human.
+- Escalation: /AAA:verify-phase orchestrator surfaces the failed status to the human.
   Human invokes arch-executor for the current phase to produce the missing design documents,
   then re-invokes arch-verifier.
 

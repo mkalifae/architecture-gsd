@@ -3,7 +3,7 @@
 **Referenced by:** arch-verifier (implements), arch-checker (applies Level 1-2),
 arch-integrator (applies Level 3-4), all agents (understand what "verified" means)
 **Purpose:** Defines the 4-level verification stack for architecture documents.
-This is the Architecture GSD adaptation of verification for the design domain —
+This is the AAA adaptation of verification for the design domain —
 no test execution, no build commands, verification is structural and referential.
 
 **Key difference from code verification:** Code verification runs tests and checks

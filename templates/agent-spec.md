@@ -27,7 +27,7 @@ color: blue
        3. What this agent's output domain is (what artifacts it produces)
      BANNED phrases: "TBD", "handles gracefully", "as needed", "will be defined",
                      "to be determined", "manages the", "oversees the"
-     GOOD example: "Spawned by /arch-gsd:execute-phase when a design phase is ready
+     GOOD example: "Spawned by /AAA:execute-phase when a design phase is ready
      for execution. This agent reads the phase plan, writes architecture documents
      for each task, and returns a structured JSON result to the orchestrator. Output
      domain is design documents in the project's design/ directory."

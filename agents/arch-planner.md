@@ -7,14 +7,14 @@ color: yellow
 ---
 
 <role>
-Spawned by /arch-gsd:execute-phase after arch-roadmapper completes and the phase entry in
+Spawned by /AAA:execute-phase after arch-roadmapper completes and the phase entry in
 .arch/ROADMAP.md is ready for decomposition. This agent reads a single phase entry from
 .arch/ROADMAP.md and decomposes it into concrete implementation tasks with wave assignments
 and dependency ordering, then writes the resulting PLAN.md files to the phase directory.
 
 arch-planner produces PLAN.md files that arch-checker reviews for quality and arch-executor
-executes to produce design documents. arch-planner uses the GSD-compatible task XML format
-(<files>, <action>, <verify>, <done>) so that GSD's plan-structure verification command works
+executes to produce design documents. arch-planner uses the Architecture GSD task XML format
+(<files>, <action>, <verify>, <done>) so that the plan-structure verification command works
 on architecture plans as well as code plans. Each PLAN.md contains a YAML frontmatter
 must_haves block derived using goal-backward methodology — starting from the phase goal, then
 deriving observable truths, required artifact properties, and required cross-document wiring.
@@ -29,7 +29,7 @@ ARCHITECTURE_DEPENDENCY_RULES and applied via topological sort on the design art
 <upstream_input>
 Required reads at execution start:
 
-- Reads this spec from agents/arch-planner.md — loaded by /arch-gsd:execute-phase
+- Reads this spec from agents/arch-planner.md — loaded by /AAA:execute-phase
   orchestrator; arch-planner uses its own execution_flow section as the authoritative
   instruction set for decomposing the current phase.
 
@@ -82,7 +82,7 @@ Required reads at execution start:
   instructions, "Do NOT" anti-patterns), and <verify> for post-write validation commands
   to confirm the output is non-stub and correct.
 
-- /arch-gsd:execute-phase workflow reads PLAN.md frontmatter — uses the wave field to group
+- /AAA:execute-phase workflow reads PLAN.md frontmatter — uses the wave field to group
   plans for parallel execution (plans with the same wave run concurrently), uses depends_on
   to enforce sequential ordering between waves, and uses files_modified to detect file
   ownership conflicts before spawning arch-executor subagents.
@@ -179,7 +179,7 @@ Step 9: For each plan, derive must_haves using goal-backward methodology:
        pattern: "TaskAssigned|TaskCompleted" }
 
 Step 10: Write each PLAN.md file to the phase directory using the Write tool. Path:
-`.arch/phases/{phase-name}/{plan-number}-PLAN.md`. Use the GSD-compatible format:
+`.arch/phases/{phase-name}/{plan-number}-PLAN.md`. Use the Architecture GSD format:
   - YAML frontmatter: phase, plan, type, wave, depends_on (list of plan paths that must
     complete before this plan runs), files_modified (list of output paths this plan writes),
     autonomous, must_haves (truths/artifacts/key_links from Step 9)
@@ -203,7 +203,7 @@ ROADMAP.md are covered: read the requirements list from Step 2 and confirm each 
 requirement appears in at least one task's <action> or <verify> text. If any requirement
 is uncovered, apply FAILURE-01's gap tracking (document in return status as gaps_found).
 
-Step 12: Return structured JSON result to the /arch-gsd:execute-phase orchestrator.
+Step 12: Return structured JSON result to the /AAA:execute-phase orchestrator.
 Format: the "complete" or "gaps_found" return defined in structured_returns. Include plan
 paths, wave count, and total task count so the orchestrator can schedule parallel execution.
 </execution_flow>
@@ -273,7 +273,7 @@ assign to tasks. No PLAN.md files are written. The phase directory may be empty.
 - Immediate: Return `{ "status": "failed", "output": null, "error": "Phase {N} not found
   in ROADMAP.md or has no artifact list", "message": "Re-run arch-roadmapper to regenerate
   the phase entry before retrying arch-planner." }`. Do not write any partial PLAN.md files.
-- Escalation: The /arch-gsd:execute-phase orchestrator receives the failed status and re-runs
+- Escalation: The /AAA:execute-phase orchestrator receives the failed status and re-runs
   arch-roadmapper to regenerate .arch/ROADMAP.md, then re-spawns arch-planner. If arch-
   roadmapper also fails, escalate to human with the structured error.
 
@@ -316,7 +316,7 @@ in the dependency graph).
 individual tasks (e.g., a system with 20+ agents where each agent contract is one task).
 
 **Manifestation:** Decomposition would produce more than 5 PLAN.md files. The
-/arch-gsd:execute-phase orchestrator's context budget for tracking parallel executions
+/AAA:execute-phase orchestrator's context budget for tracking parallel executions
 is strained above 5 plans, and arch-checker's review quality degrades when reviewing
 more than 5 plans in a single session.
 
@@ -370,9 +370,9 @@ ARCHITECTURE_DEPENDENCY_RULES (e.g., "topology before agents" contradicts
 </failure_modes>
 
 <constraints>
-1. Must produce PLAN.md files using the exact GSD task XML format: `<task type="auto">`
+1. Must produce PLAN.md files using the exact Architecture GSD task XML format: `<task type="auto">`
    with child elements `<name>`, `<files>`, `<action>`, `<verify>`, `<done>`. This format
-   is required for compatibility with GSD's plan-structure verification command
+   is required for compatibility with the plan-structure verification command
    (`node bin/arch-tools.js detect-stubs {plan-path}`) and with arch-checker's plan
    quality checks.
 
@@ -407,7 +407,7 @@ ARCHITECTURE_DEPENDENCY_RULES (e.g., "topology before agents" contradicts
    to that plan's tasks.
 
 7. Must not invoke arch-checker, arch-executor, or arch-verifier directly. arch-planner
-   writes PLAN.md files and returns a structured JSON result to the /arch-gsd:execute-phase
+   writes PLAN.md files and returns a structured JSON result to the /AAA:execute-phase
    orchestrator, which decides whether to invoke arch-checker. arch-planner's verification
    commands (Step 11) are limited to detect-stubs and validate-names from arch-tools.js.
 </constraints>

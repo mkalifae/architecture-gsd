@@ -1,10 +1,10 @@
-# Naming Conventions — Architecture GSD
+# Naming Conventions — AAA
 
 **Status:** Locked (Phase 1)
 **Enforced by:** `arch-tools.js validate-names`
 **Version:** 1.0
 
-This document is the canonical naming contract for all Architecture GSD artifacts. It is a machine-checkable specification, not a style guide suggestion. Every regex pattern in this document is used directly by `arch-tools.js validate-names`.
+This document is the canonical naming contract for all AAA artifacts. It is a machine-checkable specification, not a style guide suggestion. Every regex pattern in this document is used directly by `arch-tools.js validate-names`.
 
 ---
 
@@ -70,7 +70,7 @@ This document is the canonical naming contract for all Architecture GSD artifact
 
 **Rule:** An agent name starts with a lowercase letter and contains only lowercase letters, digits, and hyphens.
 
-**Rationale:** kebab-case matches Claude Code's convention for agent file names (`discuss-system.md`). It is URL-safe and naturally maps the `name:` frontmatter field to the file name without transformation. The 11 Architecture GSD agents follow this convention:
+**Rationale:** kebab-case matches Claude Code's convention for agent file names (`discuss-system.md`). It is URL-safe and naturally maps the `name:` frontmatter field to the file name without transformation. The 11 AAA agents follow this convention:
 
 ```
 discuss-system

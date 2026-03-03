@@ -1,14 +1,26 @@
 {
-  "name": "architecture-gsd",
+  "name": "aaa-cc",
   "version": "1.0.0",
-  "description": "Architecture GSD — Agentic architecture design system for producing complete, cross-referenced architecture packages",
-  "main": "bin/arch-tools.js",
-  "scripts": {
-    "test": "echo \"No test runner configured\" && exit 0"
+  "description": "Multi-agent architecture design system for Claude Code. Produces verified architecture packages for agentic systems.",
+  "bin": {
+    "aaa-cc": "bin/install.js"
   },
-  "dependencies": {
-    "js-yaml": "^4.1.0"
-  },
+  "files": [
+    "bin",
+    "commands",
+    "architecture-gsd",
+    "agents",
+    "hooks"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "architecture",
+    "multi-agent",
+    "agentic",
+    "design-system",
+    "verification"
+  ],
   "engines": {
     "node": ">=18.0.0"
   },

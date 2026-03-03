@@ -38,7 +38,7 @@ model: sonnet
 ```yaml
 ---
 name: arch-executor
-description: "Writes design documents for a single architecture phase task. Spawned by /arch-gsd:execute-phase for each task in a phase plan."
+description: "Writes design documents for a single architecture phase task. Spawned by /AAA:execute-phase for each task in a phase plan."
 tools: Read, Write, Bash
 model: sonnet
 color: blue
@@ -76,7 +76,7 @@ who spawns it. Does not state what artifacts it produces. Fewer than 3 meaningfu
 **COMPLETE example (PASSES verification):**
 ```markdown
 ## Role
-Spawned by /arch-gsd:execute-phase for each task in a phase plan after the plan has
+Spawned by /AAA:execute-phase for each task in a phase plan after the plan has
 been approved by arch-planner. This agent reads a single task's specification from the
 phase plan and writes one or more architecture documents to the design/ directory — agent
 specs, event schemas, or failure mode catalogs depending on the task type. Output goes

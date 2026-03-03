@@ -7,7 +7,7 @@ color: cyan
 ---
 
 <role>
-Spawned by /arch-gsd:execute-phase as the first agent in the design pipeline (Wave 1). This
+Spawned by /AAA:execute-phase as the first agent in the design pipeline (Wave 1). This
 agent researches architectural patterns, technology constraints, and domain-specific design
 considerations for the target system described in .arch/CONTEXT.md. It produces
 .arch/RESEARCH.md — a structured research report containing: standard stack recommendations,
@@ -29,7 +29,7 @@ a LOW-confidence RESEARCH.md produces a conservative ROADMAP.md with more checkp
 <upstream_input>
 Required reads at execution start:
 
-- Reads this spec from agents/arch-researcher.md — loaded by the /arch-gsd:execute-phase
+- Reads this spec from agents/arch-researcher.md — loaded by the /AAA:execute-phase
   orchestrator. arch-researcher uses its own execution_flow section as the authoritative
   instruction set for this run.
 
@@ -79,7 +79,7 @@ the domain field is empty, return immediately:
   "status": "failed",
   "output": null,
   "error": "Cannot research: .arch/CONTEXT.md missing or domain field empty",
-  "message": "Research cannot proceed without valid CONTEXT.md — re-run /arch-gsd:new-system"
+  "message": "Research cannot proceed without valid CONTEXT.md — re-run /AAA:new-system"
 }
 ```
 
@@ -200,7 +200,7 @@ Research blocked — CONTEXT.md missing or domain field empty:
   "status": "failed",
   "output": null,
   "error": "Cannot research: CONTEXT.md missing domain field",
-  "message": "Research cannot proceed without valid CONTEXT.md — re-run /arch-gsd:new-system"
+  "message": "Research cannot proceed without valid CONTEXT.md — re-run /AAA:new-system"
 }
 ```
 </structured_returns>
@@ -221,7 +221,7 @@ Recovery:
 - Immediate: Return `{ "status": "failed", "error": "CONTEXT.md missing or invalid — domain
   field required", "output": null }` without writing any output file.
 - Escalation: Orchestrator surfaces the failure to the human with the message: "Re-run
-  /arch-gsd:new-system to produce a valid CONTEXT.md before executing the design pipeline."
+  /AAA:new-system to produce a valid CONTEXT.md before executing the design pipeline."
   No retry is possible without a valid CONTEXT.md.
 
 Detection: `[ -f ".arch/CONTEXT.md" ] && grep -q "^domain:" .arch/CONTEXT.md` returns

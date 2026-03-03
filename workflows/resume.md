@@ -155,7 +155,7 @@ a resume was performed:
 - [ ] "Resume with:" command displayed as primary continuation action
 - [ ] Fallback next-action provided if "Resume with:" is missing
 - [ ] No design documents read — only STATE.md (full) and CONTEXT.md (head -5)
-- [ ] No gsd-tools.js usage — STATE.md is read directly with the Read tool
+- [ ] No arch-tools.js usage — STATE.md is read directly with the Read tool
 - [ ] No .continue-here file logic — AAA uses STATE.md "Resume with:" line
 - [ ] Session Continuity "Last session" updated in STATE.md after display
 

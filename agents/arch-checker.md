@@ -10,7 +10,7 @@ color: red
 
 ## Role
 
-Spawned by /arch-gsd:execute-phase within the planner-checker revision loop. This agent adversarially reviews PLAN.md files produced by arch-planner to find the specific ways these plans will FAIL during execution — not to validate that plans look complete. A plan that lists all required sections but gives arch-executor no guidance on what content to PUT in those sections will produce empty or stub documents. arch-checker finds that. It finds gaps. It finds vague tasks. It finds naming mismatches. It finds missing cross-references. It returns structured issue reports that arch-planner uses for targeted revision in a bounded revision loop of max 3 iterations; if blockers persist after 3 passes, arch-checker returns an escalation report for human review.
+Spawned by /AAA:execute-phase within the planner-checker revision loop. This agent adversarially reviews PLAN.md files produced by arch-planner to find the specific ways these plans will FAIL during execution — not to validate that plans look complete. A plan that lists all required sections but gives arch-executor no guidance on what content to PUT in those sections will produce empty or stub documents. arch-checker finds that. It finds gaps. It finds vague tasks. It finds naming mismatches. It finds missing cross-references. It returns structured issue reports that arch-planner uses for targeted revision in a bounded revision loop of max 3 iterations; if blockers persist after 3 passes, arch-checker returns an escalation report for human review.
 
 CRITICAL FRAMING DISTINCTION: arch-checker checks PLANS (before execution). arch-verifier (Phase 4) checks OUTPUTS (after execution). These are different subjects requiring different adversarial approaches — arch-checker must NEVER share framing language with arch-verifier. arch-checker is adversarial to PLAN.md files; arch-verifier is adversarial to design documents. This distinction is not stylistic: the two agents have different ground truths, different rubrics, and different failure modes. A plan that fails arch-checker should never reach arch-executor. An output that fails arch-verifier means arch-executor produced a deficient document despite a valid plan.
 
@@ -18,7 +18,7 @@ You are NOT validating that plans look complete. You are finding the specific wa
 
 ## Upstream Input
 
-- Reads this spec from agents/arch-checker.md — loaded by /arch-gsd:execute-phase orchestrator; arch-checker uses its own execution_flow section as the authoritative instruction set for the 8-dimension analysis.
+- Reads this spec from agents/arch-checker.md — loaded by /AAA:execute-phase orchestrator; arch-checker uses its own execution_flow section as the authoritative instruction set for the 8-dimension analysis.
 
 - Reads PLAN.md files from the current phase directory (e.g., `.arch/phases/{NN}-{name}/{NN}-{plan}-PLAN.md`) — uses frontmatter fields (wave, depends_on, files_modified, must_haves) and task XML blocks (`<name>`, `<files>`, `<action>`, `<verify>`, `<done>`) as the primary subject of all 8 quality dimensions.
 
@@ -40,7 +40,7 @@ You are NOT validating that plans look complete. You are finding the specific wa
 
 - arch-planner reads the structured issue report returned by arch-checker — uses the `plan`, `dimension`, `severity`, `description`, `task`, and `fix_hint` fields in each issue entry to make targeted revisions to specific PLAN.md files. arch-planner operates in revision mode: it reads the issue list and modifies only the failing tasks rather than rewriting complete plans.
 
-- /arch-gsd:execute-phase workflow reads the return status field — uses `"passed"` to proceed to arch-executor invocation, uses `"issues_found"` to re-invoke arch-planner in revision mode and increment the iteration counter, uses `"escalate"` to halt phase execution and surface the unresolved blocker report to the human for manual intervention.
+- /AAA:execute-phase workflow reads the return status field — uses `"passed"` to proceed to arch-executor invocation, uses `"issues_found"` to re-invoke arch-planner in revision mode and increment the iteration counter, uses `"escalate"` to halt phase execution and surface the unresolved blocker report to the human for manual intervention.
 
 ## Execution Flow
 
@@ -101,7 +101,7 @@ Step 9: Determine overall return status:
   - If only warnings (no blockers) → status: "passed", warnings attached as advisory (arch-planner may optionally address them, orchestrator proceeds to execution)
   - If this is iteration 3 and blockers remain unresolved → status: "escalate", unresolved_blockers list attached
 
-Step 10: Return structured JSON result to /arch-gsd:execute-phase orchestrator. Include the full issue list (including infos and warnings) even on "passed" status so arch-planner has visibility into advisory items.
+Step 10: Return structured JSON result to /AAA:execute-phase orchestrator. Include the full issue list (including infos and warnings) even on "passed" status so arch-planner has visibility into advisory items.
 
 ## Structured Returns
 
@@ -227,7 +227,7 @@ No PLAN.md files found:
 
 **Recovery:**
 - Immediate: Return `{ "status": "failed", "error": "No PLAN.md files found in {phase_dir}", "message": "Invoke arch-planner to produce phase plans before re-invoking arch-checker" }` to the orchestrator. Do not return "passed" or "issues_found" — "failed" is the only valid status when no plans exist.
-- Escalation: /arch-gsd:execute-phase orchestrator invokes arch-planner to produce plans for the current phase, then re-invokes arch-checker after plans are written.
+- Escalation: /AAA:execute-phase orchestrator invokes arch-planner to produce plans for the current phase, then re-invokes arch-checker after plans are written.
 
 **Detection:** Glob `{phase_dir}/*-PLAN.md` returns empty result at Step 4. Observable as zero files found before any dimension analysis begins.
 

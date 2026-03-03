@@ -7,7 +7,7 @@ color: purple
 ---
 
 <role>
-Spawned by /arch-gsd:verify-phase workflow AFTER arch-verifier completes and returns status:
+Spawned by /AAA:verify-phase workflow AFTER arch-verifier completes and returns status:
 "passed". arch-integrator's job is cross-phase consistency validation — checking that entities
 referenced across multiple documents actually exist and are coherent. Where arch-verifier asks
 "is this document internally complete?", arch-integrator asks "do the entities named across all
@@ -33,7 +33,7 @@ report on top of an unverified phase.
 
 ```yaml
 canonical:
-  spawner: /arch-gsd:verify-phase
+  spawner: /AAA:verify-phase
   precondition: arch-verifier completed with status "passed"
   job: cross-phase consistency validation — entity resolution across phase boundaries
   context_discipline: digest-first, artifacts on demand — never upfront full load
@@ -96,7 +96,7 @@ canonical:
 </upstream_input>
 
 <downstream_consumer>
-- /arch-gsd:verify-phase workflow — reads arch-integrator's structured JSON return to
+- /AAA:verify-phase workflow — reads arch-integrator's structured JSON return to
   determine next action. On status "passed", the workflow marks the phase as fully integrated
   and verified. On status "gaps_found", surfaces findings to arch-executor for correction.
   On status "human_needed", halts and presents the specific human-judgment findings to the
@@ -117,7 +117,7 @@ canonical:
 ```yaml
 canonical:
   consumers:
-    - agent: /arch-gsd:verify-phase
+    - agent: /AAA:verify-phase
       reads: structured JSON return + INTEGRATION-REPORT.md status field
       uses: status to branch (proceed | remediate | halt | report-failure)
     - actor: human-architect
@@ -270,7 +270,7 @@ and the recommended action.
 canonical:
   execution_flow:
     steps: 6
-    entry: /arch-gsd:verify-phase after arch-verifier status "passed"
+    entry: /AAA:verify-phase after arch-verifier status "passed"
     exit: structured JSON to verify-phase workflow
     context_discipline: digests first (step 2), specific artifacts on demand (step 3)
     verification_gate: VERIFICATION.md status must be "passed" before integration runs
@@ -422,7 +422,7 @@ Step 1 prevents this invalid execution state.
   `{ "status": "failed", "error": "VERIFICATION.md not found | status is '{value}'" }`
   Do not run any integration checks. Integration cannot produce valid results without
   a passed verification as its foundation.
-- Escalation: /arch-gsd:verify-phase orchestrator surfaces the failure to the human.
+- Escalation: /AAA:verify-phase orchestrator surfaces the failure to the human.
   The human must either run arch-verifier to resolve all gaps (achieving status: passed)
   before arch-integrator can proceed, or confirm that integration is being invoked on a
   partially verified phase by explicit override.
@@ -526,7 +526,7 @@ canonical:
    Required frontmatter fields: phase, status, phase_coverage, timestamp. The status field
    must be one of exactly four values: passed, gaps_found, human_needed, failed. No other
    status values are permitted. A INTEGRATION-REPORT.md without frontmatter status cannot
-   be read by the /arch-gsd:verify-phase workflow or by arch-verifier's downstream check.
+   be read by the /AAA:verify-phase workflow or by arch-verifier's downstream check.
 
 4. Four status values only: passed, gaps_found, human_needed, failed. No "success", "error",
    "partial", "warning", or other variants. Status drift across agents breaks the verify-phase
@@ -534,7 +534,7 @@ canonical:
 
 5. Structured findings only — no prose descriptions for gap items. Every gap in the
    Gaps Found section must have all 4 fields: check, entity, detail, remediation. Prose-only
-   gap descriptions cannot be processed programmatically by /arch-gsd:verify-phase or
+   gap descriptions cannot be processed programmatically by /AAA:verify-phase or
    surfaced to arch-executor for correction.
 
 6. arch-integrator is read-only with respect to all design documents. It writes only

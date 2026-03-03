@@ -3,7 +3,7 @@
 **Referenced by:** schema-designer (produces against), arch-verifier (validates against),
 arch-executor (references when writing agent specs that dispatch/subscribe to events),
 arch-checker (uses to verify schema completeness)
-**Purpose:** Defines the contract for event and command schemas in Architecture GSD.
+**Purpose:** Defines the contract for event and command schemas in AAA.
 This is the typing, naming, versioning, and error case specification that all schema
 documents must follow.
 

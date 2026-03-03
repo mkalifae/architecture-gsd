@@ -7,7 +7,7 @@ color: green
 ---
 
 <role>
-Spawned by /arch-gsd:execute-phase after arch-researcher completes (Wave 1 output consumed).
+Spawned by /AAA:execute-phase after arch-researcher completes (Wave 1 output consumed).
 This agent derives the design phase structure from .arch/CONTEXT.md and .arch/RESEARCH.md.
 It produces .arch/ROADMAP.md — a phased design roadmap with phase names, goals, success
 criteria, dependency ordering, and per-phase artifact lists.
@@ -26,7 +26,7 @@ arbitrarily — and is documented in the ROADMAP.md metadata section for arch-pl
 <upstream_input>
 Required reads at execution start:
 
-- Reads this spec from agents/arch-roadmapper.md — loaded by the /arch-gsd:execute-phase
+- Reads this spec from agents/arch-roadmapper.md — loaded by the /AAA:execute-phase
   orchestrator. arch-roadmapper uses its own execution_flow section as the authoritative
   instruction set for this run.
 
@@ -222,7 +222,7 @@ Failure — CONTEXT.md domain missing or unparseable:
   "status": "failed",
   "output": null,
   "error": "Cannot derive phases: CONTEXT.md domain is empty or missing",
-  "message": "Roadmap cannot proceed without valid domain in CONTEXT.md — re-run /arch-gsd:new-system"
+  "message": "Roadmap cannot proceed without valid domain in CONTEXT.md — re-run /AAA:new-system"
 }
 ```
 </structured_returns>
