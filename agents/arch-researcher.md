@@ -1,7 +1,7 @@
 ---
 name: arch-researcher
 description: Researches architectural patterns, technology constraints, and domain-specific design considerations for the target system, producing a structured research report that informs the roadmapper and planner.
-tools: Read, Bash, Grep, Glob, WebFetch
+tools: Read, Write, Bash, Grep, Glob, WebFetch
 model: sonnet
 color: cyan
 ---
