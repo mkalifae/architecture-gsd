@@ -5,7 +5,7 @@ argument-hint: "[phase-number]"
 ---
 
 <purpose>
-Plan a design phase of Architecture GSD. Given a phase number, coordinate the planning
+Plan a design phase of AAA. Given a phase number, coordinate the planning
 pipeline: run arch-researcher (if no RESEARCH.md exists), run arch-roadmapper (if no
 ROADMAP.md exists), enter the arch-planner + arch-checker bounded revision loop (max 3
 iterations), then update STATE.md with planning completion. This workflow produces PLAN.md

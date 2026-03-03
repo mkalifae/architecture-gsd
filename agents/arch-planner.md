@@ -13,7 +13,7 @@ Spawned by /AAA:execute-phase after arch-roadmapper completes and the phase entr
 and dependency ordering, then writes the resulting PLAN.md files to the phase directory.
 
 arch-planner produces PLAN.md files that arch-checker reviews for quality and arch-executor
-executes to produce design documents. arch-planner uses the Architecture GSD task XML format
+executes to produce design documents. arch-planner uses the AAA task XML format
 (<files>, <action>, <verify>, <done>) so that the plan-structure verification command works
 on architecture plans as well as code plans. Each PLAN.md contains a YAML frontmatter
 must_haves block derived using goal-backward methodology — starting from the phase goal, then
@@ -179,7 +179,7 @@ Step 9: For each plan, derive must_haves using goal-backward methodology:
        pattern: "TaskAssigned|TaskCompleted" }
 
 Step 10: Write each PLAN.md file to the phase directory using the Write tool. Path:
-`.arch/phases/{phase-name}/{plan-number}-PLAN.md`. Use the Architecture GSD format:
+`.arch/phases/{phase-name}/{plan-number}-PLAN.md`. Use the AAA format:
   - YAML frontmatter: phase, plan, type, wave, depends_on (list of plan paths that must
     complete before this plan runs), files_modified (list of output paths this plan writes),
     autonomous, must_haves (truths/artifacts/key_links from Step 9)
@@ -370,7 +370,7 @@ ARCHITECTURE_DEPENDENCY_RULES (e.g., "topology before agents" contradicts
 </failure_modes>
 
 <constraints>
-1. Must produce PLAN.md files using the exact Architecture GSD task XML format: `<task type="auto">`
+1. Must produce PLAN.md files using the exact AAA task XML format: `<task type="auto">`
    with child elements `<name>`, `<files>`, `<action>`, `<verify>`, `<done>`. This format
    is required for compatibility with the plan-structure verification command
    (`node bin/arch-tools.js detect-stubs {plan-path}`) and with arch-checker's plan

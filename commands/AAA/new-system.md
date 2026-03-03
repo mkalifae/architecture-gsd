@@ -1,11 +1,11 @@
 ---
-description: Start Architecture GSD for a new system
+description: Start AAA for a new system
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task
 argument-hint: "[system-description]"
 ---
 
 <purpose>
-Initialize a new Architecture GSD project — scaffold the .arch/ directory, spawn discuss-system to extract structured intent from the human architect, write .arch/STATE.md from the validated .arch/CONTEXT.md that discuss-system produces. One command takes the human from a natural language system description to a fully validated CONTEXT.md ready for the design pipeline. new-system.md is a thin orchestrator: it handles directory scaffolding, discuss-system spawning, return processing, STATE.md initialization, and user-facing confirmation. All conversation logic — domain clarification, actor extraction, non-goals questioning, scale measurement, locked-decision collection — lives exclusively in discuss-system.
+Initialize a new AAA project — scaffold the .arch/ directory, spawn discuss-system to extract structured intent from the human architect, write .arch/STATE.md from the validated .arch/CONTEXT.md that discuss-system produces. One command takes the human from a natural language system description to a fully validated CONTEXT.md ready for the design pipeline. new-system.md is a thin orchestrator: it handles directory scaffolding, discuss-system spawning, return processing, STATE.md initialization, and user-facing confirmation. All conversation logic — domain clarification, actor extraction, non-goals questioning, scale measurement, locked-decision collection — lives exclusively in discuss-system.
 </purpose>
 
 <process>
@@ -169,7 +169,7 @@ Commit both files using direct git commands:
 Display confirmation to the human:
 
   ```
-  Architecture GSD -- Project Initialized
+  AAA -- Project Initialized
 
   System: [domain from CONTEXT.md]
   Context: .arch/CONTEXT.md (validated)

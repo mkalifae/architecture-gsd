@@ -5,7 +5,7 @@ argument-hint: "[phase-number]"
 ---
 
 <purpose>
-Execute the plans for a design phase of Architecture GSD. Given a phase number, validate
+Execute the plans for a design phase of AAA. Given a phase number, validate
 that PLAN.md files exist (produced by `/AAA:plan-phase N`), then spawn arch-executor agents
 in parallel per wave assignment and update STATE.md after completion.
 

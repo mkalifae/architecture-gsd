@@ -5,7 +5,7 @@ argument-hint: "[phase-number]"
 ---
 
 <purpose>
-Verify a completed design phase of Architecture GSD. Given a phase number, orchestrate the
+Verify a completed design phase of AAA. Given a phase number, orchestrate the
 full verification pipeline: check prerequisites, run arch-verifier (4-level structural
 verification), run arch-integrator (cross-phase consistency), generate MANIFEST.md (document
 index with reading order), and write DIGEST.md as the FINAL step. Updates .arch/STATE.md with
@@ -14,7 +14,7 @@ the human runs `/AAA:verify-phase N` and the pipeline validates design completen
 autonomously.
 
 verify-phase is NOT auto-invoked from execute-phase. Verification is a phase sign-off gate
-invoked manually after execute-phase completes. This matches the GSD pattern where execution
+invoked manually after execute-phase completes. This matches the AAA pattern where execution
 and verification are separate steps.
 
 Context discipline: The orchestrator must stay lean. Do NOT read full design documents in the

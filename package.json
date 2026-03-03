@@ -8,7 +8,7 @@
   "files": [
     "bin",
     "commands",
-    "architecture-gsd",
+    "aaa-runtime",
     "agents",
     "hooks"
   ],
@@ -21,6 +21,10 @@
     "design-system",
     "verification"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mkalifae/architecture-gsd.git"
+  },
   "engines": {
     "node": ">=18.0.0"
   },

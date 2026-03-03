@@ -1,5 +1,5 @@
 ---
-description: Resume Architecture GSD from saved state
+description: Resume AAA from saved state
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task
 ---
 
@@ -23,7 +23,7 @@ Check that the project has been initialized:
 
 If neither file exists, display:
 
-  "No Architecture GSD project found.
+  "No AAA project found.
   Run /AAA:new-system first to initialize a project."
 
 And stop.
@@ -71,7 +71,7 @@ Check STATE.md status field for indicators of incomplete work:
 Display the project status report:
 
 ```
-Architecture GSD — Project Status
+AAA — Project Status
 
 Project: [domain field from CONTEXT.md]
 Core value: [core value from STATE.md Project Reference]
@@ -155,7 +155,7 @@ a resume was performed:
 - [ ] "Resume with:" command displayed as primary continuation action
 - [ ] Fallback next-action provided if "Resume with:" is missing
 - [ ] No design documents read — only STATE.md (full) and CONTEXT.md (head -5)
-- [ ] No gsd-tools.js usage — STATE.md is read directly with the Read tool
+- [ ] No arch-tools.js usage — STATE.md is read directly with the Read tool
 - [ ] No .continue-here file logic — AAA uses STATE.md "Resume with:" line
 - [ ] Session Continuity "Last session" updated in STATE.md after display
 

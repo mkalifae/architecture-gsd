@@ -1,5 +1,5 @@
 ---
-description: Show Architecture GSD progress
+description: Show AAA progress
 allowed-tools: Read, Bash, Grep, Glob
 ---
 
@@ -23,7 +23,7 @@ Check for STATE.md:
 
 If STATE.md is missing, display:
 
-  "No Architecture GSD project found.
+  "No AAA project found.
   Run /AAA:new-system first to initialize a project."
 
 And stop.
@@ -85,7 +85,7 @@ emoji.
 Format:
 
 ```
-Architecture GSD — Project Progress
+AAA — Project Progress
 
 Project: [domain field from CONTEXT.md]
 Progress: [progress bar from STATE.md]
