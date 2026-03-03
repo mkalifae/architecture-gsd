@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Permission Boundaries** - Enforce write-once pattern for roadmapper, add Write to verifier and researcher (3 agents)
 - [x] **Phase 2: Internet Access** - Add WebSearch, Context7, and WebFetch to arch-researcher and arch-planner
-- [ ] **Phase 3: Workflow Restructure** - Extend new-system to run full initialization pipeline; simplify plan-phase
+- [x] **Phase 3: Workflow Restructure** - Extend new-system to run full initialization pipeline; simplify plan-phase
 - [ ] **Phase 4: New Agents** - Create arch-debugger and system-analyzer agent spec files
 
 ## Phase Details
@@ -59,7 +59,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 03-01-PLAN.md — Extend new-system with researcher/roadmapper spawn steps; simplify plan-phase prerequisite check
+- [x] 03-01-PLAN.md — Extend new-system with researcher/roadmapper spawn steps; simplify plan-phase prerequisite check
 
 ### Phase 4: New Agents
 **Goal**: arch-debugger (verification failure diagnosis) and system-analyzer (brownfield architecture intake) agent specs exist and are installable
@@ -84,5 +84,5 @@ Phases execute in order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. Permission Boundaries | 1/1 | ✓ Complete | 2026-03-03 |
 | 2. Internet Access | 1/1 | ✓ Complete | 2026-03-03 |
-| 3. Workflow Restructure | 0/1 | Not started | - |
+| 3. Workflow Restructure | 1/1 | ✓ Complete | 2026-03-03 |
 | 4. New Agents | 0/TBD | Not started | - |

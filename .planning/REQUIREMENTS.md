@@ -24,9 +24,9 @@ Requirements for GSD tool parity. Each maps to roadmap phases.
 
 ### Workflow
 
-- [ ] **WKFL-01**: `/AAA:new-system` spawns arch-researcher after intake to produce RESEARCH.md
-- [ ] **WKFL-02**: `/AAA:new-system` spawns arch-roadmapper after research to produce ROADMAP.md
-- [ ] **WKFL-03**: `/AAA:plan-phase N` assumes RESEARCH.md and ROADMAP.md exist (removes fallback spawning logic)
+- [x] **WKFL-01**: `/AAA:new-system` spawns arch-researcher after intake to produce RESEARCH.md
+- [x] **WKFL-02**: `/AAA:new-system` spawns arch-roadmapper after research to produce ROADMAP.md
+- [x] **WKFL-03**: `/AAA:plan-phase N` assumes RESEARCH.md and ROADMAP.md exist (removes fallback spawning logic)
 
 ### New Agents
 
@@ -70,9 +70,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERM-02 | Phase 1 | ✓ Done |
 | PERM-04 | Phase 1 | ✓ Done |
 | PERM-05 | Phase 1 | ✓ Done |
-| WKFL-01 | Phase 3 | Pending |
-| WKFL-02 | Phase 3 | Pending |
-| WKFL-03 | Phase 3 | Pending |
+| WKFL-01 | Phase 3 | ✓ Done |
+| WKFL-02 | Phase 3 | ✓ Done |
+| WKFL-03 | Phase 3 | ✓ Done |
 | AGNT-01 | Phase 4 | Pending |
 | AGNT-02 | Phase 4 | Pending |
 
