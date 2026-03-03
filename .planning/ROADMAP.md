@@ -56,10 +56,10 @@ Plans:
   1. `/AAA:new-system` command spec shows arch-researcher spawn step producing RESEARCH.md after intake
   2. `/AAA:new-system` command spec shows arch-roadmapper spawn step producing ROADMAP.md after research
   3. `/AAA:plan-phase` command spec assumes RESEARCH.md and ROADMAP.md exist with no fallback spawning logic
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md — Extend new-system with researcher/roadmapper spawn steps; simplify plan-phase prerequisite check
 
 ### Phase 4: New Agents
 **Goal**: arch-debugger (verification failure diagnosis) and system-analyzer (brownfield architecture intake) agent specs exist and are installable
@@ -84,5 +84,5 @@ Phases execute in order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. Permission Boundaries | 1/1 | ✓ Complete | 2026-03-03 |
 | 2. Internet Access | 1/1 | ✓ Complete | 2026-03-03 |
-| 3. Workflow Restructure | 0/TBD | Not started | - |
+| 3. Workflow Restructure | 0/1 | Not started | - |
 | 4. New Agents | 0/TBD | Not started | - |
