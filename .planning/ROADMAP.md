@@ -43,10 +43,10 @@ Plans:
   2. arch-researcher agent spec lists Context7 in its tools section
   3. arch-planner agent spec lists WebFetch in its tools section
   4. arch-planner agent spec lists Context7 in its tools section
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md — Add internet tools to arch-researcher (WebSearch, Context7) and arch-planner (WebFetch, Context7)
 
 ### Phase 3: Workflow Restructure
 **Goal**: Running `/AAA:new-system` produces CONTEXT.md, RESEARCH.md, and ROADMAP.md before the user reaches plan-phase
@@ -83,6 +83,6 @@ Phases execute in order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Permission Boundaries | 1/1 | ✓ Complete | 2026-03-03 |
-| 2. Internet Access | 0/TBD | Not started | - |
+| 2. Internet Access | 0/1 | Planning complete | - |
 | 3. Workflow Restructure | 0/TBD | Not started | - |
 | 4. New Agents | 0/TBD | Not started | - |
