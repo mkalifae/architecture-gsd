@@ -65,7 +65,7 @@ Each task was committed atomically:
 2. **Task 2: Add Write to arch-verifier tools (PERM-04)** - `e0916de` (feat)
 3. **Task 3: Add Write to arch-researcher tools (PERM-05)** - `1796a71` (feat)
 
-**Plan metadata:** _(docs commit follows)_
+**Plan metadata:** `cef9424` (docs: complete permission-boundaries plan 01)
 
 ## Files Created/Modified
 - `agents/arch-roadmapper.md` - Removed Edit from tools frontmatter; body unchanged (346 lines)
