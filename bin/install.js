@@ -294,7 +294,7 @@ function writeManifest(configDir) {
   const agentsDir = path.join(configDir, 'agents');
   if (fs.existsSync(agentsDir)) {
     for (const file of fs.readdirSync(agentsDir)) {
-      if ((file.startsWith('arch-') || file === 'discuss-system.md' || file === 'context-engineer.md' || file === 'failure-analyst.md' || file === 'schema-designer.md') && file.endsWith('.md')) {
+      if ((file.startsWith('arch-') || file === 'discuss-system.md' || file === 'context-engineer.md' || file === 'failure-analyst.md' || file === 'schema-designer.md' || file === 'system-analyzer.md') && file.endsWith('.md')) {
         manifest.files['agents/' + file] = fileHash(path.join(agentsDir, file));
       }
     }
@@ -441,9 +441,10 @@ function uninstall(isGlobal) {
   // 3. Remove AAA agents
   const agentsDir = path.join(targetDir, 'agents');
   if (fs.existsSync(agentsDir)) {
-    const aaaAgents = ['arch-checker.md', 'arch-executor.md', 'arch-integrator.md',
+    const aaaAgents = ['arch-checker.md', 'arch-debugger.md', 'arch-executor.md', 'arch-integrator.md',
       'arch-planner.md', 'arch-researcher.md', 'arch-roadmapper.md', 'arch-verifier.md',
-      'context-engineer.md', 'discuss-system.md', 'failure-analyst.md', 'schema-designer.md'];
+      'context-engineer.md', 'discuss-system.md', 'failure-analyst.md', 'schema-designer.md',
+      'system-analyzer.md'];
     let agentCount = 0;
     for (const file of aaaAgents) {
       const fp = path.join(agentsDir, file);
@@ -613,9 +614,10 @@ function install(isGlobal, profile) {
     fs.mkdirSync(agentsDest, { recursive: true });
 
     // Remove old AAA agents before copying new ones
-    const aaaAgentNames = ['arch-checker.md', 'arch-executor.md', 'arch-integrator.md',
+    const aaaAgentNames = ['arch-checker.md', 'arch-debugger.md', 'arch-executor.md', 'arch-integrator.md',
       'arch-planner.md', 'arch-researcher.md', 'arch-roadmapper.md', 'arch-verifier.md',
-      'context-engineer.md', 'discuss-system.md', 'failure-analyst.md', 'schema-designer.md'];
+      'context-engineer.md', 'discuss-system.md', 'failure-analyst.md', 'schema-designer.md',
+      'system-analyzer.md'];
     for (const file of aaaAgentNames) {
       const fp = path.join(agentsDest, file);
       if (fs.existsSync(fp)) fs.unlinkSync(fp);
