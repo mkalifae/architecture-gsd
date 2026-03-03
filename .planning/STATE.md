@@ -42,7 +42,7 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Tighten Edit access: Remove Edit from discuss-system, arch-planner, arch-roadmapper (write-once pattern)
+- Tighten Edit access: Remove Edit only from arch-roadmapper. Keep Edit on discuss-system (iterative intake) and arch-planner (checker feedback loop) — AAA domain adaptation
 - Add Write to arch-researcher and arch-verifier so agents can produce their own output files
 - Extend new-system pipeline: discuss-system → arch-researcher → arch-roadmapper before user reaches plan-phase
 

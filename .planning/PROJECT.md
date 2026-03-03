@@ -66,7 +66,8 @@ AAA was derived from GSD (Get Shit Done, 23.5k stars). GSD builds software; AAA 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Tighten Edit access (remove from 3 agents) | Matches GSD's write-once pattern; prevents unintended overwrites | — Pending |
+| Keep Edit on discuss-system and arch-planner | Architecture intake and planning are iterative — unlike GSD's code-write-once domain | ✓ Good |
+| Remove Edit only from arch-roadmapper | Roadmap is written once per phase, matches GSD's write-once pattern | — Pending |
 | Add WebSearch + Context7 to researcher/planner | Architecture design benefits from current docs and patterns | — Pending |
 | Write-without-Edit for arch-verifier | Verifier should produce reports but not modify design artifacts | — Pending |
 | Restructure new-system pipeline | plan-phase shouldn't discover missing prerequisites | — Pending |

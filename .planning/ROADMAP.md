@@ -12,7 +12,7 @@ Close all 8 gaps identified in the GSD comparison analysis. Align agent tool ass
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Permission Boundaries** - Enforce write-once pattern across 5 agents (remove Edit where unneeded, add Write where missing)
+- [ ] **Phase 1: Permission Boundaries** - Enforce write-once pattern for roadmapper, add Write to verifier and researcher (3 agents)
 - [ ] **Phase 2: Internet Access** - Add WebSearch, Context7, and WebFetch to arch-researcher and arch-planner
 - [ ] **Phase 3: Workflow Restructure** - Extend new-system to run full initialization pipeline; simplify plan-phase
 - [ ] **Phase 4: New Agents** - Create arch-debugger and system-analyzer agent spec files
@@ -20,15 +20,15 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Phase Details
 
 ### Phase 1: Permission Boundaries
-**Goal**: Each agent has exactly the file-mutation tools its role requires — no more, no less
+**Goal**: Each agent has exactly the file-mutation tools its role requires — roadmapper loses Edit (write-once), verifier and researcher gain Write (produce own output)
 **Depends on**: Nothing (first phase)
-**Requirements**: PERM-01, PERM-02, PERM-03, PERM-04, PERM-05
+**Requirements**: PERM-02, PERM-04, PERM-05
 **Success Criteria** (what must be TRUE):
-  1. discuss-system agent spec lists Write without Edit in its tools section
-  2. arch-roadmapper agent spec lists Write without Edit in its tools section
-  3. arch-planner agent spec lists Write without Edit in its tools section
-  4. arch-verifier agent spec lists Write in its tools section (previously had none)
-  5. arch-researcher agent spec lists Write in its tools section (previously had none)
+  1. arch-roadmapper agent spec lists Write without Edit in its tools section
+  2. arch-verifier agent spec lists Write in its tools section (previously had none)
+  3. arch-researcher agent spec lists Write in its tools section (previously had none)
+
+> **Note:** discuss-system and arch-planner retain Edit — architecture intake refines CONTEXT.md iteratively, and planner iterates with checker in a feedback loop. This is a deliberate AAA domain adaptation, not a GSD discrepancy.
 **Plans**: TBD
 
 Plans:
@@ -62,12 +62,12 @@ Plans:
 - [ ] 03-01: TBD
 
 ### Phase 4: New Agents
-**Goal**: arch-debugger and system-analyzer agent specs exist and are installable as part of the aaa-cc package
+**Goal**: arch-debugger (verification failure diagnosis) and system-analyzer (brownfield architecture intake) agent specs exist and are installable
 **Depends on**: Nothing (independent of other phases, sequenced last for logical grouping)
 **Requirements**: AGNT-01, AGNT-02
 **Success Criteria** (what must be TRUE):
-  1. agents/arch-debugger.md exists with tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
-  2. agents/system-analyzer.md exists with tools: Read, Write, Bash, Grep, Glob
+  1. agents/arch-debugger.md exists with tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch — role focuses on diagnosing verification failures, cross-reference inconsistencies, and naming convention violations
+  2. agents/system-analyzer.md exists with tools: Read, Write, Bash, Grep, Glob — role focuses on reading existing architecture documents/specs to inform new designs
   3. Both new agent specs follow the existing YAML frontmatter + XML sections format
   4. Both files are included in the npm package install manifest
 **Plans**: TBD
